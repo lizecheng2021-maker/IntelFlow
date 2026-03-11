@@ -43,7 +43,7 @@ The only open-source **agentic** intelligence system that:
 | Custom analysis dimensions | No — fixed editorial | No — you curate manually | No — hardcoded topics | **Yes — fully configurable** |
 | Authentic editorial voice | Human teams required | Not applicable | Generic AI output | **Config file, no team needed** |
 | Self-hosted + production grade | No | No | Hobby-grade, fragile JSON | **Yes — failover built in** |
-| Cost | Subscription fees | Subscription fees | Free but limited | **~$2-3/day, you own it** |
+| Cost | Subscription fees | Subscription fees | Free but limited | **Free with Gemini/Ollama · Pay only what your model charges per call** |
 
 Commercial products like Morning Brew need large editorial teams to achieve a consistent, authentic voice. Open-source alternatives are hobby projects with fragile storage and no publishing pipeline. IntelFlow is the only self-hosted system that delivers both production reliability and genuine editorial personality — configured entirely through a file.
 
@@ -199,6 +199,20 @@ Beyond dimensions, you can configure:
 | **Moonshot** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
 | **Baidu ERNIE** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
 | **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ local only | `http://localhost:11434/v1` | No key needed |
+
+**Estimated daily cost** (one briefing, 4-5 dimensions):
+
+| Choice | Daily cost |
+|--------|-----------|
+| Ollama (local) | **$0** — runs on your machine |
+| Gemini 2.5 Flash | **$0** — free tier covers typical usage |
+| Qwen-Plus / GLM-4.6 | **~¥0.5–2** |
+| GPT-4o-mini | **~$0.10–0.30** |
+| Claude Haiku | **~$0.10–0.30** |
+| GPT-4o / Claude Sonnet | **~$1–3** |
+| Claude Opus / GPT-o3 | **~$5–15** (not recommended for daily use) |
+
+Start free with Gemini or Ollama. Upgrade the model only if you need deeper analysis.
 
 ---
 

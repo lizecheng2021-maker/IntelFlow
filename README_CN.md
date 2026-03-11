@@ -42,7 +42,7 @@
 | 自定义分析维度 | 无 — 固定选题 | 无 — 手动整理 | 无 — 话题写死 | **有 — 完全可配** |
 | 真实编辑人格 | 需要大型团队 | 不适用 | 通用 AI 腔调 | **配置文件搞定，不需要团队** |
 | 自部署 + 生产级 | 无 | 无 | 业余项目，JSON 存储脆弱 | **有 — 内置故障转移** |
-| 成本 | 订阅费 | 订阅费 | 免费但能力有限 | **约 $2-3/天，你完全拥有** |
+| 成本 | 订阅费 | 订阅费 | 免费但能力有限 | **Gemini / Ollama 可免费跑 · 其他按所选模型 API 实际调用计费** |
 
 Morning Brew 这类商业产品需要大型编辑团队才能维持稳定的编辑风格。现有开源替代品是业余项目，没有发布流水线，存储方式也不可靠。IntelFlow 是唯一一个同时做到生产级稳定性和真实编辑人格的自部署系统——通过配置文件驱动，不需要团队。
 
@@ -212,6 +212,19 @@ IntelFlow 的核心概念是**维度**——AI 用来组织研究方向的独立
 | **月之暗面** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
 | **百度文心** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
 | **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ 本地无联网 | `http://localhost:11434/v1` | 本地运行，无需 Key |
+
+**每日参考成本**（生成一期日报，4-5个维度）：
+
+| 选择 | 每日费用 |
+|------|---------|
+| Ollama 本地 | **$0** — 跑在你自己机器上 |
+| Gemini 2.5 Flash | **$0** — 免费额度足够日常使用 |
+| 通义 qwen-plus / 智谱 glm-4.6 | **约 ¥0.5–2** |
+| GPT-4o-mini / Claude Haiku | **约 $0.10–0.30** |
+| GPT-4o / Claude Sonnet | **约 $1–3** |
+| Claude Opus / o3 | **约 $5–15**（不建议日常用） |
+
+**从免费开始**：Gemini Flash 或 Ollama 零成本跑起来，效果满意再升级模型。
 
 ---
 
