@@ -43,7 +43,7 @@ async function saveEnvKeys() {
 
 // Test API Key
 async function testKey(service) {
-    const keyMap = { gnews: 'GNEWS_API_KEY', tavily: 'TAVILY_API_KEY', gemini: 'GEMINI_API_KEY', anthropic: 'ANTHROPIC_API_KEY' };
+    const keyMap = { gemini: 'GEMINI_API_KEY' };
     const input = document.getElementById('key-' + keyMap[service]);
     if (!input || !input.value || input.value.includes('****')) {
         alert('Please enter the full API key first.');

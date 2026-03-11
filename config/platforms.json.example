@@ -2,5 +2,16 @@
   "wordpress": {"enabled": false, "category": "Daily Briefing", "post_status": "draft"},
   "feishu": {"enabled": false},
   "devto": {"enabled": false, "api_key": ""},
-  "hashnode": {"enabled": false, "api_key": "", "publication_id": ""}
+  "hashnode": {"enabled": false, "api_key": "", "publication_id": ""},
+  "twitter": {
+    "enabled": false,
+    "post_language": "en",
+    "thread_max_tweets": 5,
+    "include_sections": ["quick_summary", "highlights"]
+  },
+  "linkedin": {
+    "enabled": false,
+    "post_language": "en",
+    "max_chars": 3000
+  }
 }

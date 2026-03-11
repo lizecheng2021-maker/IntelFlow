@@ -254,6 +254,48 @@ else
     log "Feishu not configured, skipping."
 fi
 
+# Twitter/X
+if [ -n "$TWITTER_API_KEY" ] && [ -n "$TWITTER_ACCESS_TOKEN" ]; then
+    TWITTER_ENABLED=$(python3 -c "
+import json, pathlib
+p = pathlib.Path('$CONFIG_DIR/platforms.json')
+if p.exists():
+    d = json.loads(p.read_text())
+    print('true' if d.get('twitter', {}).get('enabled', False) else 'false')
+else:
+    print('false')
+" 2>/dev/null)
+    if [ "$TWITTER_ENABLED" = "true" ]; then
+        run_with_timeout 60 "Publish Twitter" \
+            $PYTHON "$SCRIPT_DIR/publish_twitter.py" --date "$TODAY"
+    else
+        log "Twitter disabled in platforms.json, skipping."
+    fi
+else
+    log "Twitter credentials not configured, skipping."
+fi
+
+# LinkedIn
+if [ -n "$LINKEDIN_ACCESS_TOKEN" ] && [ -n "$LINKEDIN_PERSON_URN" ]; then
+    LINKEDIN_ENABLED=$(python3 -c "
+import json, pathlib
+p = pathlib.Path('$CONFIG_DIR/platforms.json')
+if p.exists():
+    d = json.loads(p.read_text())
+    print('true' if d.get('linkedin', {}).get('enabled', False) else 'false')
+else:
+    print('false')
+" 2>/dev/null)
+    if [ "$LINKEDIN_ENABLED" = "true" ]; then
+        run_with_timeout 60 "Publish LinkedIn" \
+            $PYTHON "$SCRIPT_DIR/publish_linkedin.py" --date "$TODAY"
+    else
+        log "LinkedIn disabled in platforms.json, skipping."
+    fi
+else
+    log "LinkedIn credentials not configured, skipping."
+fi
+
 # ============================================
 # Step 6: Weekly / Monthly (if applicable)
 # ============================================

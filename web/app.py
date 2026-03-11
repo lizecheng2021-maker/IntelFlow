@@ -283,19 +283,7 @@ def test_api_key():
 
     try:
         import urllib.request
-        if service == "gnews":
-            url = f"https://gnews.io/api/v4/top-headlines?lang=en&max=1&apikey={key}"
-            resp = urllib.request.urlopen(url, timeout=10)
-            return jsonify({"ok": resp.status == 200})
-        elif service == "tavily":
-            import urllib.parse
-            req_data = json.dumps({"query": "test", "max_results": 1, "api_key": key}).encode()
-            req = urllib.request.Request("https://api.tavily.com/search",
-                                         data=req_data,
-                                         headers={"Content-Type": "application/json"})
-            resp = urllib.request.urlopen(req, timeout=10)
-            return jsonify({"ok": resp.status == 200})
-        elif service == "gemini":
+        if service == "gemini":
             url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
             resp = urllib.request.urlopen(url, timeout=10)
             return jsonify({"ok": resp.status == 200})

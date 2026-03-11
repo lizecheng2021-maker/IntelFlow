@@ -1,7 +1,6 @@
 <p align="center">
-  <h1 align="center">IntelFlow</h1>
-  <p align="center"><strong>One API Key. Tell the AI What You Care About. Get Your Daily Briefing.</strong></p>
-  <p align="center">Open-source framework that uses AI + Web Search to automatically discover, analyze, and deliver intelligence on any topic you define.</p>
+  <h1 align="center">IntelFlow — Your Personal Intelligence Engine, Running 24/7</h1>
+  <p align="center"><strong>One API key. Define what you care about. Get a publication-quality daily briefing in two languages.</strong></p>
 </p>
 
 <p align="center">
@@ -15,16 +14,43 @@
 
 ---
 
-## How It Works
+The only open-source intelligence system that:
 
-1. **Plug in an AI model** — Claude, GPT, Gemini, Zhipu GLM, Qwen, or a local Ollama model
-2. **Tell it what you care about** — Define your focus dimensions through the Web UI (e.g., "AI 30%, Crypto 25%, SaaS 20%...")
-3. **AI discovers the sources** — The engine uses web search and built-in collectors to automatically find relevant information
-4. **Get your daily briefing** — Multi-dimensional analysis report, generated and published automatically
+- **Generates native Chinese + English briefings simultaneously** — not translation, two independent editorial voices
+- **Publishes to WordPress, WeChat Official Account, and Feishu in one command** — no other open-source project does all three
+- **Lets you define your own analysis dimensions** — AI/Finance/Crypto/Biotech/SEO, anything you want
+- **Supports any LLM** — Claude, GPT-4, Gemini, Qwen, GLM, or local Ollama
+- **Self-hosted, production-grade, no vendor lock-in, no per-article fees**
 
-No fixed data sources. No hardcoded topics. The AI finds what matters based on *your* dimensions.
+---
 
-## Quick Start
+## Why IntelFlow?
+
+| | Morning Brew / The Rundown | Feedly / Curated | hn-digest / newsletter-gpt | **IntelFlow** |
+|---|---|---|---|---|
+| Bilingual native output | No — English only | No — English only | No — English only | **Yes — Chinese + English** |
+| WeChat + Feishu + WordPress | No | No | No | **Yes — one command** |
+| Custom analysis dimensions | No — fixed editorial | No — you curate manually | No — hardcoded topics | **Yes — fully configurable** |
+| Authentic editorial voice | Human teams required | Not applicable | Generic AI output | **Config file, no team needed** |
+| Self-hosted + production grade | No | No | Hobby-grade, fragile JSON | **Yes — failover built in** |
+| Cost | Subscription fees | Subscription fees | Free but limited | **~$2-3/day, you own it** |
+
+Commercial products like Morning Brew need large editorial teams to achieve a consistent, authentic voice. Open-source alternatives are hobby projects with fragile storage and no publishing pipeline. IntelFlow is the only self-hosted system that delivers both production reliability and genuine editorial personality — configured entirely through a file.
+
+---
+
+## Live Demo
+
+See IntelFlow running in production:
+
+- **English briefings:** [www.lizecheng.net](https://www.lizecheng.net)
+- **Chinese briefings (Feishu):** [feishu.cn/wiki](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e)
+
+Your output will look completely different — it's shaped by your dimensions, your AI model, and your configured editorial voice.
+
+---
+
+## Quickstart
 
 ```bash
 # 1. Clone
@@ -36,42 +62,61 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Open the Web UI and paste your AI API key
+# 3. Launch the Web UI — paste one API key, define your focus areas, done
 python web/app.py
-# Open http://localhost:5050 → paste ONE API key → define your focus areas → done
+# Open http://localhost:5050
+```
 
-# 4. Run your first briefing
+That's the setup. To run your first briefing:
+
+```bash
 bash scripts/run_daily.sh
 ```
 
-**That's it.** One API key is all you need to get started. Everything else is optional.
+One API key is all you need. Everything else — publishing targets, additional data sources, editorial persona — is optional configuration.
 
-## Supported AI Models
+---
 
-| Provider | Models | Notes |
-|----------|--------|-------|
-| Anthropic | Claude Sonnet / Opus / Haiku | Best analytical depth |
-| OpenAI | GPT-4o / GPT-4o-mini / o1 | Widely available |
-| Google | Gemini 2.5 Pro / Flash | Free tier available |
-| 智谱 AI | GLM-4-Plus / GLM-4 | Best for Chinese content |
-| 阿里通义 | Qwen-Max / Plus / Turbo | OpenAI-compatible API |
-| Ollama | Llama 3 / Mistral / Qwen2 | 100% local, no API key needed |
+## What You Get
 
-Switch models anytime in the Web UI. No code changes needed.
+A full daily briefing run produces:
 
-## At a Glance
+```
+output/2026-03-11/
+├── daily_en.md          # English briefing (~4,000-5,000 words)
+├── daily_zh.md          # Chinese briefing (~4,000-5,000 words, independent editorial voice)
+├── cover_en.png         # AI-generated cover image
+├── cover_zh.png         # AI-generated cover image
+└── briefing.json        # Structured source data
+```
 
-| Metric | Value |
-|--------|-------|
-| Setup Time | ~5 minutes (paste API key + define dimensions) |
-| End-to-End Runtime | ~25 minutes per briefing |
-| Daily Cost | ~$2-3 (depends on your AI model) |
-| Output | Multi-dimensional analysis reports, optional AI cover images |
-| Hardware | Runs on a single laptop |
+**Briefing structure** (adapts to your configured dimensions):
 
-## Define Your Dimensions
+```
+30-Second Summary
+─────────────────
+[Your Dimension 1]   e.g., AI Industry — 3-5 items, each with independent analysis
+[Your Dimension 2]   e.g., Crypto — signals, not summaries
+[Your Dimension 3]   e.g., SaaS — competitive moves, funding
+...
+Today's Synthesis    Cross-dimensional insight, 400-600 words
+```
 
-IntelFlow's core concept is **dimensions** — independent analysis tracks the AI uses to organize its research. You define what matters to you through the Web UI.
+Each item carries a judgment, not just a headline. The AI cross-references signals across dimensions and calls structural shifts when it sees them.
+
+**Output cadence:**
+
+| Format | Length | Cadence |
+|--------|--------|---------|
+| Daily Briefing | 4,000-5,000 words | Every day |
+| Weekly Deep-Dive | 8,000-10,000 words | Aggregated |
+| Monthly Review | 12,000-15,000 words | Trend synthesis |
+
+---
+
+## Configure Your Domain
+
+IntelFlow's core concept is **dimensions** — independent analysis tracks the AI uses to organize its research. Define them once in the Web UI.
 
 **Crypto Trader:**
 - Market Signals 30% | On-chain Data 25% | Regulatory 20% | DeFi Protocols 15% | Macro 10%
@@ -85,19 +130,14 @@ IntelFlow's core concept is **dimensions** — independent analysis tracks the A
 **Game Developer:**
 - Industry News 30% | Tech Releases 25% | Community Sentiment 20% | Competitor Moves 15% | Platform Changes 10%
 
-The AI uses these dimensions to guide its web search, prioritize information, and structure the final report.
+Beyond dimensions, you can configure:
 
-## What Makes IntelFlow Different
+- **Editorial voice** — tone, style, recurring phrases, analysis depth
+- **Language output** — Chinese only, English only, or both simultaneously
+- **Publishing targets** — WordPress, WeChat, Feishu, or just local Markdown
+- **AI model** — switch between Claude, GPT-4, Gemini, Qwen, GLM, or local Ollama with no code changes
 
-**AI-Driven Discovery** — You don't manually curate sources. The AI uses web search to find relevant information for each of your dimensions. It discovers what's happening, not just what you already know to look for.
-
-**Thinking-Model Analysis** — The AI doesn't just summarize. It cross-references signals across dimensions, identifies structural shifts, and outputs independent judgment. You configure the analytical depth and editorial voice.
-
-**Section-Based Parallel Generation** — Each dimension is analyzed independently and in parallel. If one section fails, it retries without blocking others.
-
-**Configurable Editorial Voice** — Define the persona through the Web UI — tone, catchphrases, analysis style. Your briefing sounds like *you*, not generic AI output.
-
-**Multi-Platform Publishing** — Auto-publish to WordPress, Feishu, Dev.to, Hashnode. Or just read the markdown files locally.
+---
 
 ## Architecture
 
@@ -108,10 +148,10 @@ The AI uses these dimensions to guide its web search, prioritize information, an
  COLLECT (parallel)          PROCESS             GENERATE (parallel)      PUBLISH
  ______________________     ___________         ____________________     ________
 | Web Search           |   |           |       |                    |   |        |
-| RSS Feeds            |   |  prepare  |       |  Section 1         |   | WP     |
-| Hacker News          |-->|  briefing |--+--->|  Section 2         |-->| Feishu |
-| GitHub Trending      |   |   .py     |  |   |  Section 3         |   | Dev.to |
-| Reddit               |   |___________|  |   |  Section N         |   |________|
+| RSS Feeds            |   |  prepare  |       |  Section 1 (EN+ZH) |   | WP     |
+| Hacker News          |-->|  briefing |--+--->|  Section 2 (EN+ZH) |-->| WeChat |
+| GitHub Trending      |   |   .py     |  |   |  Section 3 (EN+ZH) |   | Feishu |
+| Reddit               |   |___________|  |   |  Section N (EN+ZH) |   |________|
 | YouTube Transcripts  |        |         |   |____________________|
 | Custom Collectors    |        v         |            |
 |______________________|   AI WebSearch   |            v
@@ -120,37 +160,35 @@ The AI uses these dimensions to guide its web search, prioritize information, an
 ```
 
 **Key design decisions:**
+
 - Each collector has a 10-minute timeout — one slow source never blocks the pipeline
 - The AI model is pluggable — switch providers without changing any pipeline code
 - Failed sections auto-retry once without affecting other sections
-- Built-in collectors (RSS, HN, GitHub, Reddit, YouTube) work with no API keys
+- Built-in collectors (RSS, HN, GitHub, Reddit, YouTube) work with no extra API keys
+- Bilingual generation runs in parallel — not sequential translation
 
-## Extend with Custom Collectors
-
-Want to add your own data source? Write a Python script that outputs JSON:
+**Extend with custom collectors:**
 
 ```bash
-# 1. Create scripts/collect_mydata.py
-#    - Accept --date and --output args
-#    - Save output as raw_mydata.json
-
-# 2. That's it — the pipeline auto-discovers collect_*.py scripts
+# Create scripts/collect_mydata.py
+# Accept --date and --output args, save output as raw_mydata.json
+# That's it — the pipeline auto-discovers collect_*.py scripts
 ```
 
-## Output Formats
+---
 
-- **Daily Briefing** — 4,000-5,000 words, with AI-generated cover images
-- **Weekly Deep-Dive** — 8,000-10,000 words, aggregated cross-dimensional analysis
-- **Monthly Review** — 12,000-15,000 words, trend synthesis
+## Supported AI Models
 
-## Author's Output
+| Provider | Models | Notes |
+|----------|--------|-------|
+| Anthropic | Claude Sonnet / Opus / Haiku | Best analytical depth |
+| OpenAI | GPT-4o / GPT-4o-mini / o1 | Widely available |
+| Google | Gemini 2.5 Pro / Flash | Free tier available |
+| Zhipu AI | GLM-4-Plus / GLM-4 | Best for Chinese content |
+| Alibaba | Qwen-Max / Plus / Turbo | OpenAI-compatible API |
+| Ollama | Llama 3 / Mistral / Qwen2 | 100% local, no API key needed |
 
-The author uses IntelFlow daily. Published output:
-
-- **English:** [www.lizecheng.net](https://www.lizecheng.net)
-- **Chinese (Feishu):** [feishu.cn/wiki](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e?fromScene=spaceOverview)
-
-Your setup will look completely different — it depends on your dimensions and your AI model.
+---
 
 ## Contributing
 
@@ -163,9 +201,11 @@ Contributions welcome:
 
 Please open an issue first to discuss significant changes.
 
+---
+
 ## License
 
-[MIT License](LICENSE) - Use it, modify it, ship it.
+[MIT License](LICENSE) — Use it, modify it, ship it.
 
 ---
 
