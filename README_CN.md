@@ -207,7 +207,15 @@ IntelFlow 的核心概念是**维度**——AI 用来组织研究方向的独立
 
 ## 开源协议
 
-[MIT License](LICENSE) — 自由使用、修改、发布。
+**[MIT + Commons Clause](LICENSE)**
+
+| 使用场景 | 费用 |
+|----------|------|
+| 个人使用、自部署 | 免费 |
+| 学习、开源贡献、fork 改造 | 免费 |
+| 商业部署（SaaS、代理服务、嵌入付费产品）| $1,000 USD / 部署授权 |
+
+商业授权咨询：[GitHub Issues](https://github.com/lizecheng2021-maker/IntelFlow)
 
 ---
 

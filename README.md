@@ -207,7 +207,15 @@ Please open an issue first to discuss significant changes.
 
 ## License
 
-[MIT License](LICENSE) — Use it, modify it, ship it.
+**[MIT + Commons Clause](LICENSE)**
+
+| Use case | Cost |
+|----------|------|
+| Personal use, self-hosted | Free |
+| Learning, open-source contribution | Free |
+| Commercial deployment (SaaS, agency, reselling) | $1,000 USD / deployment |
+
+For commercial licensing: open an issue or contact via [GitHub](https://github.com/lizecheng2021-maker/IntelFlow).
 
 ---
 
