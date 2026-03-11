@@ -21,7 +21,7 @@ Most AI newsletter tools are hardcoded: fixed sources, fixed topics, generic sum
 
 The framework handles the hard parts: parallel data collection, intelligent deduplication, section-based AI analysis, report assembly, and multi-platform publishing. You just configure what matters to you.
 
-**Live example** (one user's configuration): [www.lizecheng.net](https://www.lizecheng.net)
+**Built by the author using IntelFlow:** [www.lizecheng.net](https://www.lizecheng.net)
 
 ## At a Glance
 
@@ -199,9 +199,11 @@ IntelFlow is in active development. Contributions welcome in these areas:
 
 Please open an issue first to discuss significant changes.
 
-## Live Example
+## Author's Output
 
-One user's IntelFlow configuration — tracking AI, SEO, finance, and startups — publishes daily at **[www.lizecheng.net](https://www.lizecheng.net)**
+The author uses IntelFlow daily to track AI, SEO, finance, and startups. Published output:
+
+- **English reports:** [www.lizecheng.net](https://www.lizecheng.net)
 
 Your setup will look completely different based on your dimensions and sources.
 

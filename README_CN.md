@@ -23,7 +23,7 @@ IntelFlow 是一个**开源框架**，用来构建你自己的 AI 情报日报�
 
 大多数 AI 新闻工具是写死的：固定源、固定话题、通用摘要。IntelFlow 把底层架构开放出来，让你针对自己的领域构建情报系统——不管你关注的是加密货币、生物科技、SaaS 竞品、本地政策、还是其他任何方向。
 
-**实际使用效果**（其中一个用户的配置）：[www.lizecheng.net](https://www.lizecheng.net)
+**作者用 IntelFlow 构建的实际作品：** [www.lizecheng.net](https://www.lizecheng.net)
 
 ## 核心指标
 
@@ -208,9 +208,11 @@ IntelFlow 正在积极开发中，欢迎在以下方向贡献：
 
 重大改动请先开 Issue 讨论。
 
-## 实际使用示例
+## 作者实际产出
 
-一位用户用 IntelFlow 追踪 AI、SEO、财经、创业方向，每日产出发布在 **[www.lizecheng.net](https://www.lizecheng.net)**
+作者每天用 IntelFlow 追踪 AI、SEO、财经、创业方向，发布在：
+
+- **英文日报：** [www.lizecheng.net](https://www.lizecheng.net)
 
 你的配置会完全不同——取决于你定义的维度和数据源。
 
