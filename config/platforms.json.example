@@ -1,0 +1,6 @@
+{
+  "wordpress": {"enabled": false, "category": "Daily Briefing", "post_status": "draft"},
+  "feishu": {"enabled": false},
+  "devto": {"enabled": false, "api_key": ""},
+  "hashnode": {"enabled": false, "api_key": "", "publication_id": ""}
+}

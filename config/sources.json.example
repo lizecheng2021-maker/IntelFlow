@@ -1,0 +1,18 @@
+{
+  "gnews": {"enabled": true, "max_results": 10},
+  "rss_news": {"enabled": true, "feeds": ["https://feeds.bbci.co.uk/news/world/rss.xml"]},
+  "fmp": {"enabled": false, "symbols": ["AAPL", "GOOGL", "MSFT", "NVDA"]},
+  "akshare": {"enabled": false},
+  "yfinance": {"enabled": true, "symbols": ["^GSPC", "^IXIC", "^DJI"]},
+  "hackernews": {"enabled": true, "top_n": 15},
+  "github_trending": {"enabled": true},
+  "seo_rss": {"enabled": true, "feeds": ["https://www.searchenginejournal.com/feed/", "https://moz.com/devblog/feed"]},
+  "producthunt": {"enabled": true},
+  "reddit": {"enabled": true, "subreddits": ["entrepreneur", "startups", "SaaS", "sideproject"]},
+  "youtube": {"enabled": true, "channels": ["@MattDiGiorgio", "@JohnnyHarris"]},
+  "tavily": {"enabled": false},
+  "serpapi": {"enabled": false},
+  "custom_rss": [],
+  "custom_subreddits": [],
+  "youtube_channels": []
+}

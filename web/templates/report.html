@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}IntelFlow — Report {{ date }}{% endblock %}
+{% block content %}
+<div class="report-view">
+    <div class="report-header">
+        <a href="/" class="back-link">&larr; Dashboard</a>
+        <h1>Report: {{ date }}</h1>
+        <div class="report-tabs">
+            {% if zh %}<button class="tab active" onclick="showLang('zh')">Chinese</button>{% endif %}
+            {% if en %}<button class="tab {% if not zh %}active{% endif %}" onclick="showLang('en')">English</button>{% endif %}
+        </div>
+    </div>
+
+    {% if zh %}
+    <div id="report-zh" class="report-content active">
+        <div class="markdown-body">{{ zh | safe }}</div>
+    </div>
+    {% endif %}
+
+    {% if en %}
+    <div id="report-en" class="report-content {% if not zh %}active{% endif %}">
+        <div class="markdown-body">{{ en | safe }}</div>
+    </div>
+    {% endif %}
+
+    {% if not zh and not en %}
+    <div class="empty-state">
+        <p>No report content found for {{ date }}.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function showLang(lang) {
+    document.querySelectorAll('.report-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.report-tabs .tab').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('report-' + lang);
+    if (target) {
+        target.classList.add('active');
+        event.target.classList.add('active');
+    }
+}
+</script>
+{% endblock %}

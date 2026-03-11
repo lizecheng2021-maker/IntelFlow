@@ -1,0 +1,16 @@
+{
+  "dimensions": {
+    "ai_tech": {"enabled": true, "weight": 25, "label": "AI & Technology"},
+    "finance": {"enabled": true, "weight": 15, "label": "Finance & Markets"},
+    "seo": {"enabled": true, "weight": 15, "label": "SEO & Search"},
+    "startup": {"enabled": true, "weight": 15, "label": "Startups & Business"},
+    "ecommerce": {"enabled": true, "weight": 10, "label": "E-commerce"},
+    "creator": {"enabled": true, "weight": 10, "label": "Creator Economy"},
+    "macro": {"enabled": true, "weight": 10, "label": "Macro & Policy"}
+  },
+  "languages": ["en"],
+  "report_length": "standard",
+  "custom_rss": [],
+  "custom_subreddits": [],
+  "custom_youtube_channels": []
+}

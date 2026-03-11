@@ -1,0 +1,35 @@
+# Secrets
+.env
+config/platforms.json
+config/sources.json
+config/profile.json
+config/focus.json
+
+# Output
+output/
+
+# Runtime state
+state/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# System
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# Browser data
+.browser_data/

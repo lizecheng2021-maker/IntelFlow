@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}IntelFlow — Setup{% endblock %}
+{% block content %}
+<div class="setup-wizard">
+    <h1>Configuration</h1>
+    <p>Set up your API keys, data sources, focus areas, and publishing platforms.</p>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="keys">API Keys</button>
+        <button class="tab" data-tab="sources">Data Sources</button>
+        <button class="tab" data-tab="focus">Focus Areas</button>
+        <button class="tab" data-tab="profile">Editorial Voice</button>
+        <button class="tab" data-tab="platforms">Publishing</button>
+    </div>
+
+    <!-- API Keys -->
+    <div id="tab-keys" class="tab-content active">
+        <h2>API Keys</h2>
+        <p>Configure your API keys. Free tiers are sufficient for daily use.</p>
+
+        <div class="key-group">
+            <h3>AI Models (Required — pick at least one)</h3>
+            <div class="form-row">
+                <label>ANTHROPIC_API_KEY</label>
+                <input type="password" id="key-ANTHROPIC_API_KEY"
+                       value="{{ env_vars.get('ANTHROPIC_API_KEY', '') }}"
+                       placeholder="sk-ant-...">
+                <button class="btn btn-sm" onclick="testKey('anthropic')">Test</button>
+                <span class="key-hint">Claude API — report generation engine</span>
+            </div>
+            <div class="form-row">
+                <label>GEMINI_API_KEY</label>
+                <input type="password" id="key-GEMINI_API_KEY"
+                       value="{{ env_vars.get('GEMINI_API_KEY', '') }}"
+                       placeholder="AIza...">
+                <button class="btn btn-sm" onclick="testKey('gemini')">Test</button>
+                <span class="key-hint">Google Gemini — cover image generation (free tier available)</span>
+            </div>
+        </div>
+
+        <div class="key-group">
+            <h3>Data Sources (Optional — enhances coverage)</h3>
+            <div class="form-row">
+                <label>GNEWS_API_KEY</label>
+                <input type="password" id="key-GNEWS_API_KEY"
+                       value="{{ env_vars.get('GNEWS_API_KEY', '') }}"
+                       placeholder="...">
+                <button class="btn btn-sm" onclick="testKey('gnews')">Test</button>
+                <span class="key-hint">GNews.io — 100 free requests/day</span>
+            </div>
+            <div class="form-row">
+                <label>TAVILY_API_KEY</label>
+                <input type="password" id="key-TAVILY_API_KEY"
+                       value="{{ env_vars.get('TAVILY_API_KEY', '') }}"
+                       placeholder="tvly-...">
+                <button class="btn btn-sm" onclick="testKey('tavily')">Test</button>
+                <span class="key-hint">Tavily — AI search, 1000 free/month</span>
+            </div>
+            <div class="form-row">
+                <label>SERPAPI_API_KEY</label>
+                <input type="password" id="key-SERPAPI_API_KEY"
+                       value="{{ env_vars.get('SERPAPI_API_KEY', '') }}"
+                       placeholder="...">
+                <span class="key-hint">SerpAPI — Google search fallback, 100 free/month</span>
+            </div>
+            <div class="form-row">
+                <label>FMP_API_KEY</label>
+                <input type="password" id="key-FMP_API_KEY"
+                       value="{{ env_vars.get('FMP_API_KEY', '') }}"
+                       placeholder="...">
+                <span class="key-hint">Financial Modeling Prep — US stock data, 250 free/day</span>
+            </div>
+        </div>
+
+        <div class="key-group">
+            <h3>Publishing Platforms (Optional)</h3>
+            <div class="form-row">
+                <label>WORDPRESS_URL</label>
+                <input type="text" id="key-WORDPRESS_URL"
+                       value="{{ env_vars.get('WORDPRESS_URL', '') }}"
+                       placeholder="https://your-site.com">
+                <span class="key-hint">WordPress site URL</span>
+            </div>
+            <div class="form-row">
+                <label>WORDPRESS_USER</label>
+                <input type="text" id="key-WORDPRESS_USER"
+                       value="{{ env_vars.get('WORDPRESS_USER', '') }}"
+                       placeholder="admin">
+            </div>
+            <div class="form-row">
+                <label>WORDPRESS_APP_PASSWORD</label>
+                <input type="password" id="key-WORDPRESS_APP_PASSWORD"
+                       value="{{ env_vars.get('WORDPRESS_APP_PASSWORD', '') }}"
+                       placeholder="xxxx xxxx xxxx xxxx">
+                <span class="key-hint">WordPress Application Password (not login password)</span>
+            </div>
+            <div class="form-row">
+                <label>FEISHU_WEBHOOK</label>
+                <input type="password" id="key-FEISHU_WEBHOOK"
+                       value="{{ env_vars.get('FEISHU_WEBHOOK', '') }}"
+                       placeholder="https://open.feishu.cn/...">
+                <span class="key-hint">Feishu/Lark webhook URL</span>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveEnvKeys()">Save API Keys</button>
+        <div id="keys-status" class="status-msg"></div>
+    </div>
+
+    <!-- Data Sources -->
+    <div id="tab-sources" class="tab-content">
+        <h2>Data Sources</h2>
+        <p>Toggle which data sources to collect from. Free sources are enabled by default.</p>
+
+        <div class="source-grid">
+            <div class="source-card">
+                <h3>News & Macro</h3>
+                <label class="toggle"><input type="checkbox" data-source="gnews" {{ 'checked' if sources.get('gnews', {}).get('enabled', True) }}> GNews API</label>
+                <label class="toggle"><input type="checkbox" data-source="rss_news" {{ 'checked' if sources.get('rss_news', {}).get('enabled', True) }}> RSS Feeds (free)</label>
+            </div>
+            <div class="source-card">
+                <h3>Finance</h3>
+                <label class="toggle"><input type="checkbox" data-source="fmp" {{ 'checked' if sources.get('fmp', {}).get('enabled', True) }}> FMP (US stocks)</label>
+                <label class="toggle"><input type="checkbox" data-source="akshare" {{ 'checked' if sources.get('akshare', {}).get('enabled', True) }}> AKShare (CN stocks, free)</label>
+                <label class="toggle"><input type="checkbox" data-source="yfinance" {{ 'checked' if sources.get('yfinance', {}).get('enabled', True) }}> yfinance (global, free)</label>
+            </div>
+            <div class="source-card">
+                <h3>AI & Tech</h3>
+                <label class="toggle"><input type="checkbox" data-source="hackernews" {{ 'checked' if sources.get('hackernews', {}).get('enabled', True) }}> Hacker News (free)</label>
+                <label class="toggle"><input type="checkbox" data-source="github_trending" {{ 'checked' if sources.get('github_trending', {}).get('enabled', True) }}> GitHub Trending (free)</label>
+            </div>
+            <div class="source-card">
+                <h3>SEO & Marketing</h3>
+                <label class="toggle"><input type="checkbox" data-source="seo_rss" {{ 'checked' if sources.get('seo_rss', {}).get('enabled', True) }}> SEO RSS (SEJ/Moz/Ahrefs, free)</label>
+            </div>
+            <div class="source-card">
+                <h3>Business & Startups</h3>
+                <label class="toggle"><input type="checkbox" data-source="producthunt" {{ 'checked' if sources.get('producthunt', {}).get('enabled', True) }}> ProductHunt (free)</label>
+                <label class="toggle"><input type="checkbox" data-source="reddit" {{ 'checked' if sources.get('reddit', {}).get('enabled', True) }}> Reddit (free)</label>
+            </div>
+            <div class="source-card">
+                <h3>YouTube</h3>
+                <label class="toggle"><input type="checkbox" data-source="youtube" {{ 'checked' if sources.get('youtube', {}).get('enabled', True) }}> YouTube Transcripts (free)</label>
+            </div>
+            <div class="source-card">
+                <h3>Search Supplement</h3>
+                <label class="toggle"><input type="checkbox" data-source="tavily" {{ 'checked' if sources.get('tavily', {}).get('enabled', False) }}> Tavily AI Search</label>
+                <label class="toggle"><input type="checkbox" data-source="serpapi" {{ 'checked' if sources.get('serpapi', {}).get('enabled', False) }}> SerpAPI Fallback</label>
+            </div>
+        </div>
+
+        <h3>Custom RSS Feeds</h3>
+        <div id="custom-rss">
+            <div class="form-row">
+                <input type="text" class="rss-input" placeholder="https://example.com/feed.xml">
+                <button class="btn btn-sm" onclick="addRssField()">+</button>
+            </div>
+        </div>
+
+        <h3>Custom Subreddits</h3>
+        <div id="custom-subreddits">
+            <input type="text" id="subreddit-input" placeholder="e.g. entrepreneur, startups, SaaS (comma-separated)">
+        </div>
+
+        <h3>YouTube Channels</h3>
+        <textarea id="youtube-channels" rows="4" placeholder="One channel name or URL per line">{{ sources.get('youtube_channels', '')|join('\n') if sources.get('youtube_channels') }}</textarea>
+
+        <button class="btn btn-primary" onclick="saveSources()">Save Sources</button>
+        <div id="sources-status" class="status-msg"></div>
+    </div>
+
+    <!-- Focus Areas -->
+    <div id="tab-focus" class="tab-content">
+        <h2>Focus Areas</h2>
+        <p>Adjust weights to control how much coverage each dimension gets.
+           Total should add up to 100%. This breaks your information bubble by ensuring multi-dimensional coverage.</p>
+
+        <div class="focus-grid">
+            {% for key, dim in focus.get('dimensions', {}).items() %}
+            <div class="focus-item">
+                <label class="toggle">
+                    <input type="checkbox" data-dim="{{ key }}" {{ 'checked' if dim.get('enabled', True) }}>
+                    {{ dim.get('label', key) }}
+                </label>
+                <input type="range" min="0" max="50" value="{{ dim.get('weight', 15) }}"
+                       class="weight-slider" data-dim="{{ key }}"
+                       oninput="updateWeight(this)">
+                <span class="weight-val" id="weight-{{ key }}">{{ dim.get('weight', 15) }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="weight-total">Total: <strong id="total-weight">100</strong>%</p>
+
+        <h3>Report Settings</h3>
+        <div class="form-row">
+            <label>Languages</label>
+            <label class="toggle"><input type="checkbox" id="lang-en" {{ 'checked' if 'en' in focus.get('languages', ['en']) }}> English</label>
+            <label class="toggle"><input type="checkbox" id="lang-zh" {{ 'checked' if 'zh' in focus.get('languages', ['en']) }}> Chinese</label>
+        </div>
+        <div class="form-row">
+            <label>Report Length</label>
+            <select id="report-length">
+                <option value="concise" {{ 'selected' if focus.get('report_length') == 'concise' }}>Concise (~2000 words)</option>
+                <option value="standard" {{ 'selected' if focus.get('report_length', 'standard') == 'standard' }}>Standard (~4000 words)</option>
+                <option value="detailed" {{ 'selected' if focus.get('report_length') == 'detailed' }}>Detailed (~6000 words)</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveFocus()">Save Focus Areas</button>
+        <div id="focus-status" class="status-msg"></div>
+    </div>
+
+    <!-- Editorial Voice -->
+    <div id="tab-profile" class="tab-content">
+        <h2>Editorial Voice</h2>
+        <p>Define the personality and writing style of your reports. This makes your daily briefing uniquely yours.</p>
+
+        <div class="form-row">
+            <label>Persona Name</label>
+            <input type="text" id="profile-name" value="{{ profile.get('name', '') }}" placeholder="e.g. Alex, your analytical friend">
+        </div>
+        <div class="form-row">
+            <label>Background</label>
+            <textarea id="profile-background" rows="3" placeholder="Who is this persona? What's their expertise?">{{ profile.get('background', '') }}</textarea>
+        </div>
+        <div class="form-row">
+            <label>Tone</label>
+            <select id="profile-tone">
+                <option value="analytical" {{ 'selected' if profile.get('tone') == 'analytical' }}>Analytical & Sharp</option>
+                <option value="casual" {{ 'selected' if profile.get('tone') == 'casual' }}>Casual & Conversational</option>
+                <option value="professional" {{ 'selected' if profile.get('tone') == 'professional' }}>Professional & Formal</option>
+                <option value="witty" {{ 'selected' if profile.get('tone') == 'witty' }}>Witty & Opinionated</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Catchphrases (one per line)</label>
+            <textarea id="profile-catchphrases" rows="3" placeholder="Let's break this down&#10;Here's the thing...&#10;Bottom line:">{{ profile.get('catchphrases', [])|join('\n') }}</textarea>
+        </div>
+        <div class="form-row">
+            <label>Analysis Style</label>
+            <textarea id="profile-style" rows="4" placeholder="How should insights be structured? e.g. Start with the conclusion, then explain why, then implications.">{{ profile.get('analysis_style', '') }}</textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+        <div id="profile-status" class="status-msg"></div>
+    </div>
+
+    <!-- Publishing Platforms -->
+    <div id="tab-platforms" class="tab-content">
+        <h2>Publishing Platforms</h2>
+        <p>Configure where reports are automatically published.</p>
+
+        <div class="platform-grid">
+            <div class="platform-card">
+                <h3>WordPress</h3>
+                <label class="toggle"><input type="checkbox" data-platform="wordpress" {{ 'checked' if platforms.get('wordpress', {}).get('enabled') }}> Enabled</label>
+                <p class="hint">Requires WORDPRESS_URL, WORDPRESS_USER, WORDPRESS_APP_PASSWORD in API Keys tab.</p>
+                <div class="form-row">
+                    <label>Category</label>
+                    <input type="text" data-platform-opt="wordpress_category" value="{{ platforms.get('wordpress', {}).get('category', 'Daily Briefing') }}">
+                </div>
+            </div>
+            <div class="platform-card">
+                <h3>Feishu / Lark</h3>
+                <label class="toggle"><input type="checkbox" data-platform="feishu" {{ 'checked' if platforms.get('feishu', {}).get('enabled') }}> Enabled</label>
+                <p class="hint">Requires FEISHU_WEBHOOK in API Keys tab.</p>
+            </div>
+            <div class="platform-card">
+                <h3>Dev.to</h3>
+                <label class="toggle"><input type="checkbox" data-platform="devto" {{ 'checked' if platforms.get('devto', {}).get('enabled') }}> Enabled</label>
+                <div class="form-row">
+                    <label>API Key</label>
+                    <input type="password" data-platform-opt="devto_key" value="{{ platforms.get('devto', {}).get('api_key', '') }}" placeholder="dev.to API key">
+                </div>
+            </div>
+            <div class="platform-card">
+                <h3>Hashnode</h3>
+                <label class="toggle"><input type="checkbox" data-platform="hashnode" {{ 'checked' if platforms.get('hashnode', {}).get('enabled') }}> Enabled</label>
+                <div class="form-row">
+                    <label>API Key</label>
+                    <input type="password" data-platform-opt="hashnode_key" value="{{ platforms.get('hashnode', {}).get('api_key', '') }}" placeholder="Hashnode PAT">
+                </div>
+                <div class="form-row">
+                    <label>Publication ID</label>
+                    <input type="text" data-platform-opt="hashnode_pub" value="{{ platforms.get('hashnode', {}).get('publication_id', '') }}">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="savePlatforms()">Save Platforms</button>
+        <div id="platforms-status" class="status-msg"></div>
+    </div>
+</div>
+{% endblock %}

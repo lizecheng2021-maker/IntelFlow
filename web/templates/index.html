@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}IntelFlow — Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard">
+    <div class="hero">
+        <h1>Your Intelligence Briefing System</h1>
+        <p>Multi-source data collection, AI-powered analysis, automated publishing.</p>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator {{ status }}">
+            <span class="dot"></span>
+            <span>Pipeline: {{ status }}</span>
+        </div>
+        <button id="btn-run" class="btn btn-primary" onclick="runPipeline()">
+            Run Daily Pipeline
+        </button>
+    </div>
+
+    <div class="section">
+        <h2>Recent Reports</h2>
+        {% if reports %}
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Chinese Report</th>
+                    <th>English Report</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.date }}</td>
+                    <td>
+                        {% if r.has_zh %}
+                        <span class="badge ok">{{ r.zh_size }}</span>
+                        {% else %}
+                        <span class="badge na">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.has_en %}
+                        <span class="badge ok">{{ r.en_size }}</span>
+                        {% else %}
+                        <span class="badge na">—</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="/report/{{ r.date }}" class="btn btn-sm">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No reports yet. <a href="/setup">Set up your sources</a> and run your first pipeline.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="pipeline-log" class="section" style="display:none;">
+        <h2>Pipeline Log</h2>
+        <pre id="log-output"></pre>
+    </div>
+</div>
+{% endblock %}
