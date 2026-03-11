@@ -76,6 +76,67 @@ def _resolve_env_placeholders(obj, env_vars: dict[str, str]):
     return obj
 
 
+def load_sources_config() -> dict:
+    """Load sources.json and return only enabled sources with their configs.
+
+    Returns a dict with three keys:
+      - "builtin_sources": dict of enabled builtin sources (name → config)
+      - "rss_feeds": dict of RSS feed categories (category → [urls])
+      - "custom_sources": dict of enabled custom sources (name → config)
+    """
+    raw = load_config("sources.json")
+    result = {}
+
+    # Filter builtin sources to enabled only
+    builtin = raw.get("builtin_sources", {})
+    result["builtin_sources"] = {
+        name: cfg
+        for name, cfg in builtin.items()
+        if isinstance(cfg, dict) and cfg.get("enabled", False)
+    }
+
+    # RSS feeds pass through as-is (strip _comment keys)
+    rss = raw.get("rss_feeds", {})
+    result["rss_feeds"] = {
+        cat: urls for cat, urls in rss.items()
+        if not cat.startswith("_") and isinstance(urls, list)
+    }
+
+    # Filter custom sources to enabled only
+    custom = raw.get("custom_sources", {})
+    result["custom_sources"] = {
+        name: cfg
+        for name, cfg in custom.items()
+        if isinstance(cfg, dict) and cfg.get("enabled", False)
+    }
+
+    return result
+
+
+def get_rss_feeds(category: str | None = None) -> list[str]:
+    """Return RSS feed URLs from sources.json, optionally filtered by category.
+
+    Args:
+        category: If provided, return only feeds from that category (e.g. "tech", "seo").
+                  If None, return all feeds across all categories.
+
+    Returns:
+        A flat list of RSS feed URL strings.
+    """
+    sources = load_sources_config()
+    rss = sources.get("rss_feeds", {})
+
+    if category is not None:
+        return list(rss.get(category, []))
+
+    # Flatten all categories
+    all_feeds = []
+    for urls in rss.values():
+        if isinstance(urls, list):
+            all_feeds.extend(urls)
+    return all_feeds
+
+
 def load_platforms() -> dict:
     """Load config/platforms.json with ${VAR} placeholders resolved from .env."""
     raw = load_json(CONFIG_DIR / "platforms.json")

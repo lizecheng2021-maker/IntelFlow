@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">IntelFlow</h1>
-  <p align="center"><strong>Your AI-Powered Daily Intelligence Engine</strong></p>
-  <p align="center">Self-hosted. Multi-source. Thinking-model driven.</p>
+  <p align="center"><strong>Build Your Own AI-Powered Daily Intelligence System</strong></p>
+  <p align="center">An open-source framework for creating personalized, multi-source intelligence briefings.<br/>Define your dimensions. Plug in your sources. Own your information flow.</p>
 </p>
 
 <p align="center">
@@ -15,41 +15,44 @@
 
 ## What Is This?
 
-IntelFlow is **not** a news aggregator. It is a self-hosted intelligence briefing system that collects from 30+ data sources, runs multi-dimensional analysis through AI thinking models, and generates publication-ready bilingual reports — automatically, every day.
+IntelFlow is an **open-source framework** for building your own AI-powered daily intelligence system. It provides the engine — you decide what to track, which sources to pull from, how deep to analyze, and where to publish.
 
-Most AI newsletter tools summarize headlines. IntelFlow asks: *What is actually happening here? What structural shift does this signal? How do these dots connect across industries?*
+Most AI newsletter tools are hardcoded: fixed sources, fixed topics, generic summaries. IntelFlow gives you the **underlying architecture** so you can build an intelligence system tailored to your world — whether you're tracking crypto markets, biotech research, SaaS competitors, local politics, or anything else.
 
-The result is a daily intelligence briefing that breaks information bubbles and trains pattern recognition — not just another feed of summaries.
+The framework handles the hard parts: parallel data collection, intelligent deduplication, section-based AI analysis, report assembly, and multi-platform publishing. You just configure what matters to you.
 
-**Live output:** [www.lizecheng.net](https://www.lizecheng.net)
+**Live example** (one user's configuration): [www.lizecheng.net](https://www.lizecheng.net)
 
 ## At a Glance
 
 | Metric | Value |
 |--------|-------|
-| Data Sources | 30+ (news, finance, AI, SEO, e-commerce, Reddit, YouTube, RSS) |
-| Analysis Dimensions | 10 (macro, finance, AI, SEO, e-commerce, growth, startups, creator economy, Reddit pain points, YouTube builders) |
+| Data Source Types | RSS, APIs, web scraping, YouTube transcripts, Reddit, search engines |
+| Analysis Dimensions | Fully customizable (default template includes 7 dimensions) |
 | End-to-End Runtime | ~25 minutes |
 | Daily API Cost | ~$2-3 |
-| Output | Bilingual reports (EN + CN), AI cover images, auto-published to 5+ platforms |
-| Hardware | Runs on a single MacBook |
+| Output | Bilingual reports, AI cover images, auto-published to multiple platforms |
+| Hardware | Runs on a single laptop |
 
 ## Why IntelFlow?
 
-**1. Multi-Dimensional Coverage**
-Not just tech news or just finance. IntelFlow cross-references 10 dimensions — macro policy, capital flows, AI releases, SEO shifts, e-commerce trends, startup signals, builder tactics, and more. Patterns emerge at the intersections.
+**1. You Define the Dimensions**
+IntelFlow doesn't decide what's important — you do. Through the web UI, define your own analysis dimensions with custom weights. A VC might track: Deal Flow 30%, Market Signals 25%, Portfolio News 20%, Regulatory 15%, Talent 10%. A game developer might track: Industry News 30%, Tech Releases 25%, Community Sentiment 20%, Competitor Moves 15%, Platform Changes 10%. The framework adapts to any domain.
 
-**2. Thinking-Model Analysis, Not Summarization**
-Each piece of information passes through layered analytical frameworks. The system identifies root causes, structural shifts, and cross-domain implications — then writes with independent judgment, not regurgitation.
+**2. Plug-In Data Architecture**
+Data collectors are modular scripts. The framework ships with collectors for common sources (RSS, news APIs, Hacker News, GitHub, Reddit, YouTube, finance APIs). Adding your own is straightforward — write a Python script that outputs JSON, drop it in `scripts/`, and it joins the pipeline.
 
-**3. Section-Based Parallel Generation**
-The briefing data is split by dimension. Each section is generated independently and in parallel, then assembled. If one section fails, it retries alone without blocking others. This keeps generation fast and reliable.
+**3. Thinking-Model Analysis, Not Summarization**
+The AI doesn't just summarize — it analyzes. Cross-references signals across dimensions, identifies structural shifts, and outputs independent judgment. You configure the analytical depth and editorial voice.
 
-**4. 3-Layer Deduplication Engine**
-Raw data from 30+ sources contains massive overlap. IntelFlow deduplicates at three stages to ensure every paragraph carries unique information.
+**4. Section-Based Parallel Generation**
+Data is split by dimension. Each section is generated independently and in parallel, then assembled. If one section fails, it retries alone without blocking others. Fast and resilient.
 
-**5. Configurable Editorial Voice**
-Through the web UI, you define the analytical persona — tone, focus weights, depth preferences. The system adapts its writing style to match your editorial identity.
+**5. 3-Layer Deduplication Engine**
+Multiple sources inevitably overlap. IntelFlow deduplicates at collection, preprocessing, and generation stages — every paragraph carries unique information.
+
+**6. Configurable Editorial Voice**
+Define the analytical persona through the web UI — tone, catchphrases, analysis style. Your daily briefing sounds like *you*, not generic AI output.
 
 ## Quick Start
 
@@ -96,20 +99,34 @@ IntelFlow includes a Flask-based configuration panel at `http://localhost:5000`:
 - **Platform Publishing** — Configure auto-publish to WordPress, Feishu, WeChat, Dev.to, LinkedIn
 - **Schedule** — Set daily run time, enable/disable weekend deep-dives
 
-## 10-Dimension Intelligence Framework
+## Dimension Framework (Fully Customizable)
 
-| # | Dimension | What It Captures | Key Sources |
-|---|-----------|-----------------|-------------|
-| 1 | Macro Trends & Policy | Regulatory shifts, geopolitical signals | GNews, China RSS feeds |
-| 2 | Finance & Investment | Capital flows, earnings, market structure | FMP, AKShare, yfinance |
-| 3 | AI & Tech Frontier | Model releases, tool launches, research | Hacker News, GitHub Trending |
-| 4 | SEO & Search Ecosystem | Algorithm updates, traffic pattern shifts | SEJ, Moz, Ahrefs Blog, Search Engine Land |
-| 5 | Indie Sites & E-Commerce | Platform changes, conversion tactics | WP Tavern, Shopify, WooCommerce |
-| 6 | Growth & Monetization | Funnel strategies, pricing experiments | a16z, First Round Review, Neil Patel |
-| 7 | Startups & Business Models | New launches, funding, pivots | Product Hunt, Indie Hackers, Reddit |
-| 8 | Personal Brand & Creator Economy | Audience building, content strategy | Publish Press, creator newsletters |
-| 9 | Reddit Business Pain Points | Real user problems, unmet demand signals | r/Entrepreneur, r/SideProject, r/startups, r/SaaS |
-| 10 | YouTube Builder Intelligence | Practitioner playbooks, tactical breakdowns | 22+ channels (3-tier priority system) |
+IntelFlow's core concept is **dimensions** — independent analysis tracks, each with its own data sources and weight. You define what matters to you.
+
+### Default Template (7 dimensions)
+
+| Dimension | Default Weight | Description |
+|-----------|---------------|-------------|
+| AI & Technology | 25% | Model releases, tool launches, research breakthroughs |
+| Finance & Markets | 15% | Capital flows, earnings, market structure changes |
+| SEO & Search | 15% | Algorithm updates, traffic pattern shifts |
+| Startups & Business | 15% | New launches, funding rounds, business model innovations |
+| E-commerce | 10% | Platform changes, conversion tactics, marketplace trends |
+| Creator Economy | 10% | Audience building, content strategy, monetization |
+| Macro & Policy | 10% | Regulatory shifts, geopolitical signals |
+
+### Example: Customize for Your Domain
+
+**Crypto Trader:**
+- Market Signals 30% | On-chain Data 25% | Regulatory 20% | DeFi Protocols 15% | Macro 10%
+
+**SaaS Founder:**
+- Competitor Intel 25% | Customer Pain Points 25% | Tech Stack 20% | Funding Landscape 15% | Growth Tactics 15%
+
+**Academic Researcher:**
+- Paper Releases 30% | Grant Funding 20% | Conference News 20% | Industry Applications 15% | Policy Impact 15%
+
+Add/remove/rename dimensions through the web UI or `config/focus.json`. Each dimension maps to data sources you configure.
 
 ## Architecture
 
@@ -182,9 +199,11 @@ IntelFlow is in active development. Contributions welcome in these areas:
 
 Please open an issue first to discuss significant changes.
 
-## Live Demo
+## Live Example
 
-See IntelFlow output published daily at **[www.lizecheng.net](https://www.lizecheng.net)**
+One user's IntelFlow configuration — tracking AI, SEO, finance, and startups — publishes daily at **[www.lizecheng.net](https://www.lizecheng.net)**
+
+Your setup will look completely different based on your dimensions and sources.
 
 ## License
 

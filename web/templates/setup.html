@@ -172,24 +172,33 @@
     <!-- Focus Areas -->
     <div id="tab-focus" class="tab-content">
         <h2>Focus Areas</h2>
-        <p>Adjust weights to control how much coverage each dimension gets.
-           Total should add up to 100%. This breaks your information bubble by ensuring multi-dimensional coverage.</p>
+        <p>These are default examples. Add, remove, or rename dimensions to match your domain.
+           Adjust weights to control how much coverage each dimension gets.
+           Total should add up to 100%.</p>
 
-        <div class="focus-grid">
+        <div class="focus-grid" id="focus-grid">
             {% for key, dim in focus.get('dimensions', {}).items() %}
-            <div class="focus-item">
-                <label class="toggle">
-                    <input type="checkbox" data-dim="{{ key }}" {{ 'checked' if dim.get('enabled', True) }}>
-                    {{ dim.get('label', key) }}
-                </label>
-                <input type="range" min="0" max="50" value="{{ dim.get('weight', 15) }}"
-                       class="weight-slider" data-dim="{{ key }}"
-                       oninput="updateWeight(this)">
-                <span class="weight-val" id="weight-{{ key }}">{{ dim.get('weight', 15) }}%</span>
+            <div class="focus-item" data-dim-key="{{ key }}">
+                <div class="focus-item-header">
+                    <label class="toggle">
+                        <input type="checkbox" data-dim="{{ key }}" {{ 'checked' if dim.get('enabled', True) }}>
+                        <span class="dim-label">{{ dim.get('label', key) }}</span>
+                    </label>
+                    <button class="btn btn-sm btn-danger" onclick="removeDimension('{{ key }}')" title="Remove dimension">&times;</button>
+                </div>
+                <input type="text" class="dim-description" data-dim-desc="{{ key }}"
+                       value="{{ dim.get('description', '') }}" placeholder="Brief description of this dimension">
+                <div class="focus-item-weight">
+                    <input type="range" min="0" max="50" value="{{ dim.get('weight', 15) }}"
+                           class="weight-slider" data-dim="{{ key }}"
+                           oninput="updateWeight(this)">
+                    <span class="weight-val" id="weight-{{ key }}">{{ dim.get('weight', 15) }}%</span>
+                </div>
             </div>
             {% endfor %}
         </div>
         <p class="weight-total">Total: <strong id="total-weight">100</strong>%</p>
+        <button class="btn btn-sm" onclick="addDimension()">+ Add Dimension</button>
 
         <h3>Report Settings</h3>
         <div class="form-row">

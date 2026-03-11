@@ -221,8 +221,13 @@ def load_recent_topics(pipeline_date: str, days: int = 5) -> set:
             continue
         try:
             data = json.loads(bf.read_text(encoding="utf-8"))
-            for section in ["ai", "news", "tavily", "business"]:
-                for item in data.get(section, [])[:30]:
+            # Scan all dimension arrays dynamically (not just hardcoded names)
+            for section_key, section_data in data.items():
+                if not isinstance(section_data, list):
+                    continue
+                for item in section_data[:30]:
+                    if not isinstance(item, dict):
+                        continue
                     text = (item.get("title") or "") + " " + (item.get("content") or "")[:200]
                     kws = extract_keywords(text)
                     entity_kws = (kws & _ENTITY_KEYWORDS) | (kws - _NOISE_KEYWORDS - _ENTITY_KEYWORDS)

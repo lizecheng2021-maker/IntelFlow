@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Split briefing.json into per-section data files.
 
-Architecture: 4 thematic sections, categorized by topic (not source).
-YouTube data has been distributed to ai/seo/business/finance dimensions
-during prepare_briefing.
+Config-driven: reads dimension definitions and source mappings from
+config/focus.json. Supports arbitrary user-defined dimensions.
 
 Principle: Each section only gets its own dimension data + corresponding
 web_supplement additions. When data is insufficient, Claude uses
@@ -16,16 +15,100 @@ from datetime import datetime
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# 4 thematic sections (YouTube content merged into corresponding dimensions)
-SECTIONS = {
+# Default sections used when no focus.json exists (backward compatibility)
+_DEFAULT_SECTIONS = {
     "ai":      {"dims": ["ai"],                "ws_dims": ["ai", "tech"]},
     "seo":     {"dims": ["seo"],               "ws_dims": ["seo"]},
     "biz":     {"dims": ["business"],           "ws_dims": ["business", "crypto"]},
     "market":  {"dims": ["finance", "news"],    "ws_dims": ["tech", "crypto"]},
 }
 
+# Maps focus.json dimension keys to briefing.json internal dimension names
+# (briefing.json uses short names like "ai", "business", "news", etc.)
+_DIM_KEY_TO_BRIEFING_DIMS = {
+    "ai_tech": ["ai"],
+    "finance": ["finance"],
+    "seo": ["seo"],
+    "startup": ["business"],
+    "ecommerce": ["business"],
+    "creator": ["business"],
+    "macro": ["news"],
+    # Legacy keys (direct match)
+    "ai": ["ai"],
+    "business": ["business"],
+    "news": ["news"],
+    "market": ["finance", "news"],
+}
+
+
+def _load_focus_config() -> dict | None:
+    """Load focus.json from config directory."""
+    for path in [ROOT / "config" / "focus.json", ROOT / "config" / "focus.json.example"]:
+        if path.exists():
+            try:
+                return json.loads(path.read_text("utf-8"))
+            except Exception as e:
+                print(f"[split] WARNING: Failed to read {path.name}: {e}")
+    return None
+
+
+def _build_sections_from_focus(focus: dict) -> dict:
+    """Build SECTIONS dict from focus.json dimensions.
+
+    Each enabled dimension in focus.json becomes a section.
+    The dimension_source_mapping and internal mapping determine which
+    briefing.json keys feed into each section.
+    """
+    dimensions = focus.get("dimensions", {})
+    source_mapping = focus.get("dimension_source_mapping", {})
+    sections = {}
+
+    for dim_key, dim_config in dimensions.items():
+        if dim_key.startswith("_"):
+            continue
+        if not dim_config.get("enabled", True):
+            continue
+
+        # Determine which briefing.json dimension arrays to pull from
+        briefing_dims = _DIM_KEY_TO_BRIEFING_DIMS.get(dim_key, [dim_key])
+
+        # Build ws_dims: the dimension tags used in web_supplement breaking_news etc.
+        ws_dims = list(briefing_dims)
+        # Add source-derived hints for web supplement filtering
+        sources = source_mapping.get(dim_key, [])
+        for src in sources:
+            if "tech" in src:
+                ws_dims.append("tech")
+            if "crypto" in src or "finance" in src:
+                ws_dims.append("crypto")
+
+        ws_dims = list(set(ws_dims))
+
+        sections[dim_key] = {
+            "dims": briefing_dims,
+            "ws_dims": ws_dims,
+            "label": dim_config.get("label", dim_key),
+            "weight": dim_config.get("weight", 10),
+        }
+
+    return sections
+
+
+def _get_sections() -> dict:
+    """Get the sections config: from focus.json if available, else defaults."""
+    focus = _load_focus_config()
+    if focus and focus.get("dimensions"):
+        sections = _build_sections_from_focus(focus)
+        if sections:
+            print(f"[split] Loaded {len(sections)} dimensions from focus.json: {list(sections.keys())}")
+            return sections
+    print("[split] Using default section definitions (no focus.json found)")
+    return _DEFAULT_SECTIONS
+
 
 def split(date_str: str):
+    SECTIONS = _get_sections()
+
     bf = ROOT / "output" / date_str / "briefing.json"
     ws_file = ROOT / "output" / date_str / "web_supplement.json"
 
@@ -69,13 +152,17 @@ def split(date_str: str):
             if tavily_dim in cfg["dims"] or tavily_dim in cfg.get("ws_dims", []):
                 sec["items"].append(tavily_item)
 
-        # Market section includes lunar data
-        if name == "market":
-            sec["lunar"] = data.get("lunar", [])
+        # Sections that include finance dims get lunar data
+        if "finance" in cfg["dims"] or "news" in cfg["dims"] or name == "market":
+            lunar_data = data.get("lunar", [])
+            if lunar_data:
+                sec["lunar"] = lunar_data
 
-        # AI section includes YouTube web supplements
-        if name == "ai" and ws:
-            sec["web_supplements"] = ws.get("youtube_supplements", [])
+        # AI-related sections get YouTube web supplements
+        if ("ai" in cfg["dims"] or name in ("ai", "ai_tech")) and ws:
+            yt_supplements = ws.get("youtube_supplements", [])
+            if yt_supplements:
+                sec["web_supplements"] = yt_supplements
 
         # Filter stale items (old projects/news with repeated exposure)
         if stale_titles:
@@ -123,12 +210,12 @@ def split(date_str: str):
     )
 
     # Generate recent coverage summary for dedup guidance
-    _generate_recent_coverage(date_str, out)
+    _generate_recent_coverage(date_str, out, SECTIONS)
 
     print(f"[split] Done -> {out}")
 
 
-def _generate_recent_coverage(today_str: str, out_dir: Path, days: int = 3):
+def _generate_recent_coverage(today_str: str, out_dir: Path, sections: dict, days: int = 3):
     """Scan recent N days of section markdown files, extract headlines + key stats.
     Output recent_coverage.json for Claude section generation to read
     and avoid repetition.
@@ -157,7 +244,7 @@ def _generate_recent_coverage(today_str: str, out_dir: Path, days: int = 3):
         if not sec_dir.exists():
             continue
 
-        for name in SECTIONS:
+        for name in sections:
             zh_file = sec_dir / f"{name}_zh.md"
             if not zh_file.exists():
                 continue
@@ -190,6 +277,8 @@ def _generate_recent_coverage(today_str: str, out_dir: Path, days: int = 3):
     repeated_stats = []
     all_stats = {}  # stat -> [dates]
     for name, entries in coverage.items():
+        if not isinstance(entries, list):
+            continue
         for entry in entries:
             for stat in entry.get("key_stats", []):
                 all_stats.setdefault(stat, set()).add(entry["date"])

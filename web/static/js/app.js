@@ -114,17 +114,72 @@ function recalcTotal() {
     }
 }
 
+// Add a new custom dimension
+function addDimension() {
+    const key = prompt('Dimension key (lowercase, no spaces, e.g. "healthcare"):');
+    if (!key || !key.match(/^[a-z][a-z0-9_]*$/)) {
+        if (key !== null) alert('Key must be lowercase letters, digits, and underscores (start with a letter).');
+        return;
+    }
+    // Check for duplicate
+    if (document.querySelector(`[data-dim-key="${key}"]`)) {
+        alert('A dimension with this key already exists.');
+        return;
+    }
+    const label = prompt('Display label (e.g. "Healthcare & Biotech"):') || key;
+    const weight = parseInt(prompt('Weight (0-50, e.g. 10):') || '10', 10);
+    if (isNaN(weight) || weight < 0 || weight > 50) {
+        alert('Weight must be a number between 0 and 50.');
+        return;
+    }
+
+    const grid = document.getElementById('focus-grid');
+    const div = document.createElement('div');
+    div.className = 'focus-item';
+    div.dataset.dimKey = key;
+    div.innerHTML = `
+        <div class="focus-item-header">
+            <label class="toggle">
+                <input type="checkbox" data-dim="${key}" checked>
+                <span class="dim-label">${label}</span>
+            </label>
+            <button class="btn btn-sm btn-danger" onclick="removeDimension('${key}')" title="Remove dimension">&times;</button>
+        </div>
+        <input type="text" class="dim-description" data-dim-desc="${key}" value="" placeholder="Brief description of this dimension">
+        <div class="focus-item-weight">
+            <input type="range" min="0" max="50" value="${weight}"
+                   class="weight-slider" data-dim="${key}"
+                   oninput="updateWeight(this)">
+            <span class="weight-val" id="weight-${key}">${weight}%</span>
+        </div>
+    `;
+    grid.appendChild(div);
+    recalcTotal();
+}
+
+// Remove a dimension row
+function removeDimension(key) {
+    const item = document.querySelector(`[data-dim-key="${key}"]`);
+    if (item && confirm(`Remove dimension "${key}"?`)) {
+        item.remove();
+        recalcTotal();
+    }
+}
+
 // Save Focus
 async function saveFocus() {
     const dimensions = {};
     document.querySelectorAll('.focus-item').forEach(item => {
         const cb = item.querySelector('input[type="checkbox"]');
         const slider = item.querySelector('.weight-slider');
+        const descInput = item.querySelector('.dim-description');
+        const labelEl = item.querySelector('.dim-label');
         if (cb && slider) {
             dimensions[cb.dataset.dim] = {
                 enabled: cb.checked,
                 weight: parseInt(slider.value),
-                label: cb.parentElement.textContent.trim()
+                label: labelEl ? labelEl.textContent.trim() : cb.dataset.dim,
+                description: descInput ? descInput.value.trim() : ''
             };
         }
     });

@@ -1,18 +1,97 @@
 {
-  "gnews": {"enabled": true, "max_results": 10},
-  "rss_news": {"enabled": true, "feeds": ["https://feeds.bbci.co.uk/news/world/rss.xml"]},
-  "fmp": {"enabled": false, "symbols": ["AAPL", "GOOGL", "MSFT", "NVDA"]},
-  "akshare": {"enabled": false},
-  "yfinance": {"enabled": true, "symbols": ["^GSPC", "^IXIC", "^DJI"]},
-  "hackernews": {"enabled": true, "top_n": 15},
-  "github_trending": {"enabled": true},
-  "seo_rss": {"enabled": true, "feeds": ["https://www.searchenginejournal.com/feed/", "https://moz.com/devblog/feed"]},
-  "producthunt": {"enabled": true},
-  "reddit": {"enabled": true, "subreddits": ["entrepreneur", "startups", "SaaS", "sideproject"]},
-  "youtube": {"enabled": true, "channels": ["@MattDiGiorgio", "@JohnnyHarris"]},
-  "tavily": {"enabled": false},
-  "serpapi": {"enabled": false},
-  "custom_rss": [],
-  "custom_subreddits": [],
-  "youtube_channels": []
+  "_comment": "Data source registry. Enable/disable sources, add your own RSS feeds and APIs.",
+
+  "builtin_sources": {
+    "gnews": {
+      "enabled": true,
+      "type": "api",
+      "description": "International news headlines",
+      "requires_key": "GNEWS_API_KEY",
+      "max_results": 10
+    },
+    "hackernews": {
+      "enabled": true,
+      "type": "api",
+      "description": "Tech community discussions and launches",
+      "requires_key": null
+    },
+    "github_trending": {
+      "enabled": true,
+      "type": "scrape",
+      "description": "Trending repositories and developer tools",
+      "requires_key": null
+    },
+    "reddit": {
+      "enabled": true,
+      "type": "api",
+      "description": "Community discussions and pain points",
+      "requires_key": null,
+      "subreddits": ["entrepreneur", "startups", "SaaS", "sideproject"]
+    },
+    "youtube": {
+      "enabled": true,
+      "type": "api",
+      "description": "Video transcripts from tracked channels",
+      "requires_key": null,
+      "channels": []
+    },
+    "fmp": {
+      "enabled": false,
+      "type": "api",
+      "description": "US stock market data and earnings",
+      "requires_key": "FMP_API_KEY",
+      "symbols": ["AAPL", "GOOGL", "MSFT", "NVDA"]
+    },
+    "akshare": {
+      "enabled": false,
+      "type": "api",
+      "description": "Chinese A-share market data",
+      "requires_key": null
+    },
+    "yfinance": {
+      "enabled": true,
+      "type": "api",
+      "description": "Global market indices and stock data",
+      "requires_key": null,
+      "symbols": ["^GSPC", "^IXIC", "^DJI"]
+    },
+    "tavily": {
+      "enabled": false,
+      "type": "search",
+      "description": "AI-powered web search for supplementary data",
+      "requires_key": "TAVILY_API_KEY"
+    },
+    "serpapi": {
+      "enabled": false,
+      "type": "search",
+      "description": "Google search fallback for missing coverage",
+      "requires_key": "SERPAPI_API_KEY"
+    }
+  },
+
+  "rss_feeds": {
+    "_comment": "Add any RSS feed URL here. Group by topic for organization.",
+    "tech": [
+      "https://news.ycombinator.com/rss"
+    ],
+    "seo": [
+      "https://www.searchenginejournal.com/feed/",
+      "https://moz.com/devblog/feed"
+    ],
+    "business": [
+      "https://a16z.com/feed/"
+    ],
+    "news": [
+      "https://feeds.bbci.co.uk/news/world/rss.xml"
+    ]
+  },
+
+  "custom_sources": {
+    "_comment": "Add your own source scripts here. Each entry maps to a script in scripts/",
+    "example_custom": {
+      "enabled": false,
+      "script": "collect_custom.py",
+      "description": "Example: add your own collector script"
+    }
+  }
 }

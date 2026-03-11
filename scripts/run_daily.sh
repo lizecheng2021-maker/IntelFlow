@@ -14,6 +14,19 @@
 #
 # Weekend: Weekly deep analysis (aggregates 7 days)
 # Month-end: Monthly review (aggregates 4 weeks)
+#
+# ============================================
+# ADDING A NEW DATA SOURCE
+# ============================================
+# 1. Create scripts/collect_yoursource.py
+#    - Accept --date and --output args
+#    - Check if its source is enabled via utils.load_sources_config()
+#    - Save output as raw_yoursource.json in the output dir
+# 2. Add an entry to config/sources.json under builtin_sources or custom_sources
+#    - Set "enabled": true, "type", "description", "requires_key"
+# 3. Map to dimensions in config/focus.json so the analysis engine knows
+#    which report section this data feeds into
+# 4. That's it — the pipeline auto-discovers collect_*.py scripts
 # ============================================
 
 set -e
@@ -103,6 +116,7 @@ log "Output: $OUTPUT_DIR"
 # ============================================
 
 log "=== Step 1: Data Collection (parallel) ==="
+log "Auto-discovering collect_*.py scripts (each checks sources.json internally)"
 
 PIDS=()
 LABELS=()
@@ -118,13 +132,16 @@ launch_collector() {
     fi
 }
 
-launch_collector "collect_news.py" "News & Macro"
-launch_collector "collect_finance.py" "Finance"
-launch_collector "collect_ai.py" "AI & Tech"
-launch_collector "collect_business_intel.py" "Business Intel"
-launch_collector "collect_youtube.py" "YouTube"
-launch_collector "collect_lunar.py" "Lunar Calendar"
-launch_collector "collect_tavily.py" "Tavily Search"
+# Auto-discover all collect_*.py scripts instead of hardcoding
+for collector in "$SCRIPT_DIR"/collect_*.py; do
+    [ -f "$collector" ] || continue
+    script_name=$(basename "$collector")
+    # Derive a human label from filename: collect_foo_bar.py → "foo bar"
+    label=$(echo "$script_name" | sed 's/^collect_//;s/\.py$//;s/_/ /g')
+    launch_collector "$script_name" "$label"
+done
+
+# Also launch supplementary search scripts
 launch_collector "search_news_supplement.py" "SerpAPI Supplement"
 
 # Wait for all collectors (10 min timeout)

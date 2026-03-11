@@ -1,12 +1,22 @@
 {
+  "_comment": "Define YOUR dimensions. Add/remove/rename freely. These are just defaults.",
   "dimensions": {
-    "ai_tech": {"enabled": true, "weight": 25, "label": "AI & Technology"},
-    "finance": {"enabled": true, "weight": 15, "label": "Finance & Markets"},
-    "seo": {"enabled": true, "weight": 15, "label": "SEO & Search"},
-    "startup": {"enabled": true, "weight": 15, "label": "Startups & Business"},
-    "ecommerce": {"enabled": true, "weight": 10, "label": "E-commerce"},
-    "creator": {"enabled": true, "weight": 10, "label": "Creator Economy"},
-    "macro": {"enabled": true, "weight": 10, "label": "Macro & Policy"}
+    "ai_tech": {"enabled": true, "weight": 25, "label": "AI & Technology", "description": "Model releases, tool launches, research"},
+    "finance": {"enabled": true, "weight": 15, "label": "Finance & Markets", "description": "Capital flows, earnings, market changes"},
+    "seo": {"enabled": true, "weight": 15, "label": "SEO & Search", "description": "Algorithm updates, traffic patterns"},
+    "startup": {"enabled": true, "weight": 15, "label": "Startups & Business", "description": "Launches, funding, business models"},
+    "ecommerce": {"enabled": true, "weight": 10, "label": "E-commerce", "description": "Platform changes, conversion tactics"},
+    "creator": {"enabled": true, "weight": 10, "label": "Creator Economy", "description": "Audience building, monetization"},
+    "macro": {"enabled": true, "weight": 10, "label": "Macro & Policy", "description": "Regulatory shifts, geopolitical signals"}
+  },
+  "dimension_source_mapping": {
+    "_comment": "Map each dimension to data source keys from sources.json. Unmapped dimensions use all sources.",
+    "ai_tech": ["hackernews", "github_trending", "rss_tech"],
+    "finance": ["fmp", "akshare", "yfinance"],
+    "seo": ["seo_rss"],
+    "startup": ["producthunt", "reddit"],
+    "creator": ["rss_creator"],
+    "macro": ["gnews", "rss_news"]
   },
   "languages": ["en"],
   "report_length": "standard",
