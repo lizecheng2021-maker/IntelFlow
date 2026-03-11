@@ -220,11 +220,11 @@ IntelFlow 的核心概念是**维度**——AI 用来组织研究方向的独立
 | 选择 | 每日费用 |
 |------|---------|
 | Ollama 本地 | **$0** — 跑在你自己机器上 |
-| Gemini 2.5 Flash | **$0** — 免费额度足够日常使用 |
-| 通义 qwen-plus / 智谱 glm-4.6 | **约 ¥0.5–2** |
-| GPT-4o-mini / Claude Haiku | **约 $0.10–0.30** |
-| GPT-4o / Claude Sonnet | **约 $1–3** |
-| Claude Opus / o3 | **约 $5–15**（不建议日常用） |
+| Gemini 2.5 Flash / Flash-Lite | **$0** — 免费额度足够日常使用 |
+| 通义 qwen3-max / 智谱 glm-4.6 | **约 ¥0.5–2** |
+| gpt-5-mini / Claude Haiku 4.5 | **约 $0.10–0.30** |
+| gpt-5 / Claude Sonnet 4.6 | **约 $1–3** |
+| Claude Opus 4.6 / o3-pro | **约 $5–15**（不建议日常用） |
 
 **从免费开始**：Gemini Flash 或 Ollama 零成本跑起来，效果满意再升级模型。
 

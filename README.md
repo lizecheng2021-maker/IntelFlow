@@ -29,7 +29,7 @@ The only open-source **agentic** intelligence system that:
 - **Generates native Chinese + English briefings simultaneously** — not translation, two independent editorial voices
 - **Onboards in plain language** — type "AI tools, crypto, indie hacking" → AI suggests dimensions + sources, done
 - **Publishes to WordPress, WeChat Official Account, and Feishu in one command** — no other open-source project does all three
-- **Supports any LLM with native web search** — Claude, GPT-4o, Gemini, Qwen, Kimi, ERNIE, or local Ollama
+- **Supports any LLM with native web search** — Claude, GPT-5, Gemini, Qwen3, Kimi, ERNIE, or local Ollama
 - **Self-hosted, production-grade, no vendor lock-in, no per-article fees**
 
 ---
@@ -145,7 +145,7 @@ Beyond dimensions, you can configure:
 - **Editorial voice** — tone, style, recurring phrases, analysis depth
 - **Language output** — Chinese only, English only, or both simultaneously
 - **Publishing targets** — WordPress, WeChat, Feishu, or just local Markdown
-- **AI model** — switch between Claude, GPT-4, Gemini, Qwen, GLM, or local Ollama with no code changes
+- **AI model** — switch between Claude, GPT-5, Gemini, Qwen3, GLM-4.6, Kimi, or local Ollama with no code changes
 
 ---
 
@@ -207,12 +207,11 @@ Beyond dimensions, you can configure:
 | Choice | Daily cost |
 |--------|-----------|
 | Ollama (local) | **$0** — runs on your machine |
-| Gemini 2.5 Flash | **$0** — free tier covers typical usage |
-| Qwen-Plus / GLM-4.6 | **~¥0.5–2** |
-| GPT-4o-mini | **~$0.10–0.30** |
-| Claude Haiku | **~$0.10–0.30** |
-| GPT-4o / Claude Sonnet | **~$1–3** |
-| Claude Opus / GPT-o3 | **~$5–15** (not recommended for daily use) |
+| Gemini 2.5 Flash / Flash-Lite | **$0** — free tier covers typical usage |
+| qwen3-max / glm-4.6 | **~¥0.5–2** |
+| gpt-5-mini / Claude Haiku 4.5 | **~$0.10–0.30** |
+| gpt-5 / Claude Sonnet 4.6 | **~$1–3** |
+| Claude Opus 4.6 / o3-pro | **~$5–15** (not recommended for daily use) |
 
 Start free with Gemini or Ollama. Upgrade the model only if you need deeper analysis.
 
