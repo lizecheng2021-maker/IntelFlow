@@ -14,6 +14,8 @@
 
 ---
 
+![IntelFlow Demo](assets/demo/demo.gif)
+
 The only open-source intelligence system that:
 
 - **Generates native Chinese + English briefings simultaneously** — not translation, two independent editorial voices

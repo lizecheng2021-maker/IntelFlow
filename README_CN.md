@@ -14,6 +14,8 @@
 
 ---
 
+![IntelFlow Demo](assets/demo/demo.gif)
+
 全球唯一同时满足：
 
 - **中英双语原生生成** — 不是翻译，两套独立编辑人格同步输出
