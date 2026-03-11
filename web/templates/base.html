@@ -13,7 +13,8 @@
         </div>
         <div class="nav-links">
             <a href="/" class="{% if request.path == '/' %}active{% endif %}">Dashboard</a>
-            <a href="/setup" class="{% if request.path == '/setup' %}active{% endif %}">Setup</a>
+            <a href="/onboard" class="nav-quicksetup {% if request.path == '/onboard' %}active{% endif %}">Quick Setup</a>
+            <a href="/setup" class="{% if request.path == '/setup' %}active{% endif %}">Advanced Setup</a>
             <a href="https://github.com/lizecheng2021-maker/IntelFlow" target="_blank">GitHub</a>
         </div>
     </nav>

@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}IntelFlow — Quick Setup{% endblock %}
+
+{% block content %}
+<div class="onboard-layout">
+
+    <div class="onboard-header">
+        <h1>Quick Setup</h1>
+        <p>Tell the AI what you care about — it will recommend the best data sources for you.</p>
+    </div>
+
+    <!-- Chat window -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-bubble ai" id="opening-message">
+            Hi! Tell me what you want to track. What topics, industries, or problems do you care about most?
+        </div>
+    </div>
+
+    <!-- Input row -->
+    <div class="chat-input-row">
+        <textarea id="user-input"
+                  placeholder="e.g. AI tools, DeFi/crypto, indie hacking, SaaS growth..."
+                  rows="2"
+                  onkeydown="handleInputKey(event)"></textarea>
+        <button class="btn btn-primary" id="btn-send" onclick="sendOnboardMessage()">Send</button>
+    </div>
+
+    <!-- Suggestions (populated by JS after AI responds) -->
+    <div class="suggestions-section" id="suggestions-section" style="display:none;">
+
+        <h2>Recommended Configuration</h2>
+        <p class="sub">Review and deselect anything you don't want. Then click Apply to save your setup.</p>
+
+        <!-- Dimension weight chips -->
+        <div class="dim-chips" id="dim-chips"></div>
+
+        <!-- RSS suggestions -->
+        <div id="rss-suggestions"></div>
+
+        <!-- Reddit suggestions -->
+        <div id="reddit-suggestions"></div>
+
+        <!-- YouTube suggestions -->
+        <div id="youtube-suggestions"></div>
+
+        <!-- Apply bar -->
+        <div class="apply-bar">
+            <div class="apply-summary">
+                <strong id="selected-count">0</strong> sources selected across
+                <strong id="selected-dims">0</strong> dimensions
+            </div>
+            <button class="btn btn-primary" id="btn-apply" onclick="applyConfig()">
+                Apply this config →
+            </button>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ─── Onboarding Chat Logic ─────────────────────────────────────
+
+let _pendingData = null;  // stores last AI response for applyConfig()
+
+function handleInputKey(e) {
+    // Cmd/Ctrl+Enter or plain Enter (without Shift) sends the message
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendOnboardMessage();
+    }
+}
+
+function appendBubble(text, role) {
+    const container = document.getElementById('chat-container');
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${role}`;
+    bubble.textContent = text;
+    container.appendChild(bubble);
+    container.scrollTop = container.scrollHeight;
+    return bubble;
+}
+
+function showTyping() {
+    const container = document.getElementById('chat-container');
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    indicator.id = 'typing-indicator';
+    indicator.innerHTML = '<span></span><span></span><span></span>';
+    container.appendChild(indicator);
+    container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+}
+
+async function sendOnboardMessage() {
+    const input = document.getElementById('user-input');
+    const btn = document.getElementById('btn-send');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    // Show user bubble
+    appendBubble(text, 'user');
+    input.value = '';
+    input.disabled = true;
+    btn.disabled = true;
+
+    // Show typing indicator
+    showTyping();
+    appendBubble('Got it. Let me research the best sources for these topics…', 'ai');
+
+    // Slight pause for the UX feel
+    await new Promise(r => setTimeout(r, 600));
+    showTyping();
+
+    try {
+        const resp = await fetch('/api/onboard/research', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interests: text })
+        });
+
+        hideTyping();
+
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            appendBubble(`Sorry, something went wrong: ${err.error || resp.statusText}`, 'ai');
+            input.disabled = false;
+            btn.disabled = false;
+            return;
+        }
+
+        const data = await resp.json();
+
+        if (data.error) {
+            appendBubble(`Hmm, I ran into an issue: ${data.error}`, 'ai');
+            input.disabled = false;
+            btn.disabled = false;
+            return;
+        }
+
+        // Summarise what was found
+        const dimCount = (data.dimensions || []).length;
+        const rssCount = (data.sources?.rss || []).length;
+        const redditCount = (data.sources?.reddit || []).length;
+        const ytCount = (data.sources?.youtube || []).length;
+
+        appendBubble(
+            `Found ${dimCount} dimensions, ${rssCount} RSS feeds, ${redditCount} subreddits, and ${ytCount} YouTube channels. ` +
+            `Review the suggestions below and click "Apply this config →" when you're ready.`,
+            'ai'
+        );
+
+        _pendingData = data;
+        renderSuggestions(data);
+
+    } catch (err) {
+        hideTyping();
+        appendBubble(`Network error: ${err.message}`, 'ai');
+        input.disabled = false;
+        btn.disabled = false;
+    }
+}
+
+// ─── Render suggestion cards ──────────────────────────────────
+
+function renderSuggestions(data) {
+    const section = document.getElementById('suggestions-section');
+
+    // Dimension chips
+    const chipsEl = document.getElementById('dim-chips');
+    chipsEl.innerHTML = '';
+    (data.dimensions || []).forEach(dim => {
+        const chip = document.createElement('div');
+        chip.className = 'dim-chip';
+        chip.innerHTML = `${dim.label} <span class="dim-weight">${dim.weight}%</span>`;
+        chip.title = dim.description || '';
+        chipsEl.appendChild(chip);
+    });
+
+    // RSS cards
+    const rssEl = document.getElementById('rss-suggestions');
+    rssEl.innerHTML = '';
+    const rssFeeds = data.sources?.rss || [];
+    if (rssFeeds.length) {
+        const title = document.createElement('div');
+        title.className = 'suggestion-group-title';
+        title.textContent = 'RSS Feeds';
+        rssEl.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'suggestion-grid';
+        rssFeeds.forEach(feed => {
+            grid.appendChild(makeCard({
+                id: `rss::${feed.url}`,
+                title: feed.title || feed.url,
+                meta: feed.url,
+                tag: feed.dimension || '',
+                checked: true
+            }));
+        });
+        rssEl.appendChild(grid);
+    }
+
+    // Reddit cards
+    const redditEl = document.getElementById('reddit-suggestions');
+    redditEl.innerHTML = '';
+    const subs = data.sources?.reddit || [];
+    if (subs.length) {
+        const title = document.createElement('div');
+        title.className = 'suggestion-group-title';
+        title.textContent = 'Subreddits';
+        redditEl.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'suggestion-grid';
+        subs.forEach(sub => {
+            grid.appendChild(makeCard({
+                id: `reddit::${sub}`,
+                title: `r/${sub}`,
+                meta: `reddit.com/r/${sub}`,
+                tag: '',
+                checked: true
+            }));
+        });
+        redditEl.appendChild(grid);
+    }
+
+    // YouTube cards
+    const ytEl = document.getElementById('youtube-suggestions');
+    ytEl.innerHTML = '';
+    const channels = data.sources?.youtube || [];
+    if (channels.length) {
+        const title = document.createElement('div');
+        title.className = 'suggestion-group-title';
+        title.textContent = 'YouTube Channels';
+        ytEl.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'suggestion-grid';
+        channels.forEach(ch => {
+            grid.appendChild(makeCard({
+                id: `youtube::${ch}`,
+                title: ch,
+                meta: `Search on YouTube`,
+                tag: '',
+                checked: true
+            }));
+        });
+        ytEl.appendChild(grid);
+    }
+
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    updateSelectionSummary();
+}
+
+function makeCard({ id, title, meta, tag, checked }) {
+    const card = document.createElement('div');
+    card.className = 'suggestion-card' + (checked ? ' selected' : '');
+    card.dataset.cardId = id;
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = checked;
+    cb.addEventListener('change', () => {
+        card.classList.toggle('selected', cb.checked);
+        updateSelectionSummary();
+    });
+    card.addEventListener('click', e => {
+        if (e.target !== cb) {
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change'));
+        }
+    });
+
+    const body = document.createElement('div');
+    body.className = 'card-body';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'card-title';
+    titleEl.textContent = title;
+    body.appendChild(titleEl);
+
+    if (meta) {
+        const metaEl = document.createElement('div');
+        metaEl.className = 'card-meta';
+        metaEl.textContent = meta;
+        body.appendChild(metaEl);
+    }
+
+    if (tag) {
+        const tagEl = document.createElement('span');
+        tagEl.className = 'card-tag';
+        tagEl.textContent = tag.replace(/_/g, ' ');
+        body.appendChild(tagEl);
+    }
+
+    card.appendChild(cb);
+    card.appendChild(body);
+    return card;
+}
+
+function updateSelectionSummary() {
+    const selected = document.querySelectorAll('.suggestion-card.selected');
+    const dimCount = document.getElementById('dim-chips').children.length;
+    document.getElementById('selected-count').textContent = selected.length;
+    document.getElementById('selected-dims').textContent = dimCount;
+}
+
+// ─── Apply config ─────────────────────────────────────────────
+
+async function applyConfig() {
+    if (!_pendingData) return;
+
+    const btn = document.getElementById('btn-apply');
+    btn.textContent = 'Saving…';
+    btn.disabled = true;
+
+    // Collect only selected cards
+    const selectedIds = new Set(
+        Array.from(document.querySelectorAll('.suggestion-card.selected'))
+            .map(c => c.dataset.cardId)
+    );
+
+    // Build focus.json payload from AI dimensions
+    const dimensions = {};
+    (_pendingData.dimensions || []).forEach(dim => {
+        dimensions[dim.key] = {
+            enabled: true,
+            weight: dim.weight,
+            label: dim.label,
+            description: dim.description || ''
+        };
+    });
+    const focusPayload = {
+        dimensions,
+        languages: ['en'],
+        report_length: 'standard',
+        custom_rss: [],
+        custom_subreddits: [],
+        custom_youtube_channels: []
+    };
+
+    // Build sources.json additions
+    const customRss = [];
+    const customSubs = [];
+    const customYt = [];
+
+    selectedIds.forEach(id => {
+        const [type, value] = id.split('::');
+        if (type === 'rss') customRss.push(value);
+        if (type === 'reddit') customSubs.push(value);
+        if (type === 'youtube') customYt.push(value);
+    });
+
+    focusPayload.custom_rss = customRss;
+    focusPayload.custom_subreddits = customSubs;
+    focusPayload.custom_youtube_channels = customYt;
+
+    // Sources toggles: enable reddit + rss + youtube when we have items
+    const sourcesPayload = {
+        rss_news: { enabled: customRss.length > 0 },
+        reddit:   { enabled: customSubs.length > 0 },
+        youtube:  { enabled: customYt.length > 0 },
+        hackernews: { enabled: true },
+        github_trending: { enabled: true },
+        custom_rss: customRss,
+        custom_subreddits: customSubs,
+        youtube_channels: customYt
+    };
+
+    try {
+        const [focusRes, sourcesRes] = await Promise.all([
+            fetch('/api/save-focus',   { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(focusPayload) }),
+            fetch('/api/save-sources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sourcesPayload) })
+        ]);
+
+        const focusOk   = (await focusRes.json()).ok;
+        const sourcesOk = (await sourcesRes.json()).ok;
+
+        if (focusOk && sourcesOk) {
+            appendBubble('Config saved! Redirecting you to the dashboard…', 'ai');
+            setTimeout(() => { window.location.href = '/?onboard=done'; }, 1200);
+        } else {
+            btn.textContent = 'Apply this config →';
+            btn.disabled = false;
+            appendBubble('Save failed — please try again or use Advanced Setup.', 'ai');
+        }
+    } catch (err) {
+        btn.textContent = 'Apply this config →';
+        btn.disabled = false;
+        appendBubble(`Error: ${err.message}`, 'ai');
+    }
+}
+</script>
+{% endblock %}

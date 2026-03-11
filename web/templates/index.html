@@ -2,6 +2,13 @@
 {% block title %}IntelFlow — Dashboard{% endblock %}
 {% block content %}
 <div class="dashboard">
+    {% if request.args.get('onboard') == 'done' %}
+    <div class="onboard-success-banner">
+        Setup complete! Your focus areas and sources have been saved.
+        Configure an AI model key in <a href="/setup">Advanced Setup</a> to start generating reports.
+    </div>
+    {% endif %}
+
     <div class="hero">
         <h1>Your Intelligence Briefing System</h1>
         <p>Multi-source data collection, AI-powered analysis, automated publishing.</p>

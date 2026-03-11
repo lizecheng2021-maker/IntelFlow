@@ -100,6 +100,12 @@ def setup():
                            platforms=platforms, profile=profile, focus=focus)
 
 
+@app.route("/onboard")
+def onboard():
+    """Conversational AI-powered setup wizard."""
+    return render_template("onboard.html")
+
+
 @app.route("/report/<date>")
 def view_report(date):
     """View a generated report."""
@@ -296,6 +302,239 @@ def test_api_key():
             return jsonify({"ok": False, "error": "Unknown service"})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
+
+
+@app.route("/api/onboard/research", methods=["POST"])
+def onboard_research():
+    """AI-powered source discovery for the onboarding wizard.
+
+    Takes {'interests': 'free text'} and returns structured JSON with
+    suggested dimensions, RSS feeds, subreddits, and YouTube channels.
+    Falls back to keyword matching when no LLM is configured.
+    """
+    data = request.get_json() or {}
+    interests = data.get("interests", "").strip()
+    if not interests:
+        return jsonify({"error": "interests field is required"}), 400
+
+    # ── Try to call the configured LLM ─────────────────────────────────────
+    ai_config = _load_json(CONFIG_DIR / "ai.json", {})
+    llm_cfg = ai_config.get("llm", {})
+
+    system_prompt = (
+        "You are an intelligence system configurator. "
+        "The user wants to build a personalized daily briefing system. "
+        "Your job is to recommend data dimensions and real, well-known sources."
+    )
+
+    user_prompt = f"""User's interests: {interests}
+
+Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+{{
+  "dimensions": [
+    {{"key": "ai_tools", "label": "AI Tools & Dev", "weight": 35, "description": "LLM tools, coding assistants, AI productivity"}},
+    ...
+  ],
+  "sources": {{
+    "rss": [
+      {{"url": "https://...", "title": "The Batch", "dimension": "ai_tools"}},
+      ...
+    ],
+    "reddit": ["MachineLearning", "LocalLLaMA"],
+    "youtube": ["Andrej Karpathy", "Fireship"]
+  }}
+}}
+
+Rules:
+- 3-5 dimensions whose weights sum to exactly 100
+- Only suggest real, well-known sources that actually exist and are publicly accessible
+- Match sources specifically to the user's stated interests
+- Keep dimension labels short (2-4 words)
+- For RSS: prefer feeds from newsletters, blogs, or official sources (not paywalled)
+- 2-3 RSS feeds per dimension, 1-3 subreddits total, 1-3 YouTube channels total
+- Respond with valid JSON only"""
+
+    result_json = None
+
+    if llm_cfg.get("provider") and llm_cfg.get("model"):
+        try:
+            import sys
+            sys.path.insert(0, str(ROOT / "scripts"))
+            from ai_adapters import create_llm, LLMError  # noqa: PLC0415
+
+            # Resolve API key: config file first, then .env, then env vars
+            api_key = llm_cfg.get("api_key") or ""
+            if not api_key:
+                provider = llm_cfg.get("provider", "")
+                env_key = _get_env_key(provider)
+                api_key = os.environ.get(env_key, "")
+                if not api_key:
+                    env_path = ROOT / ".env"
+                    if env_path.exists():
+                        for line in env_path.read_text().splitlines():
+                            line = line.strip()
+                            if line.startswith(f"{env_key}="):
+                                api_key = line.split("=", 1)[1].strip()
+                                break
+
+            cfg = {**llm_cfg, "api_key": api_key, "max_tokens": 1500, "temperature": 0.4}
+            llm = create_llm(cfg)
+            raw = llm.generate(user_prompt, system=system_prompt)
+
+            # Strip markdown code fences if present
+            raw = raw.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```", 2)[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+                raw = raw.rsplit("```", 1)[0].strip()
+
+            result_json = json.loads(raw)
+        except Exception as exc:
+            # LLM unavailable or parse error — fall through to keyword fallback
+            app.logger.warning("onboard LLM call failed (%s), using fallback", exc)
+
+    # ── Keyword-based fallback ─────────────────────────────────────────────
+    if result_json is None:
+        result_json = _keyword_fallback(interests)
+
+    # Basic validation / normalisation
+    dims = result_json.get("dimensions", [])
+    if not dims:
+        result_json = _keyword_fallback(interests)
+        dims = result_json.get("dimensions", [])
+
+    # Ensure weights sum to 100
+    total = sum(d.get("weight", 0) for d in dims)
+    if total != 100 and total > 0:
+        remainder = 100
+        for i, d in enumerate(dims):
+            if i < len(dims) - 1:
+                d["weight"] = round(d["weight"] * 100 / total)
+                remainder -= d["weight"]
+            else:
+                d["weight"] = remainder
+
+    return jsonify(result_json)
+
+
+def _keyword_fallback(interests: str) -> dict:
+    """Return a canned configuration based on keyword matching in interests."""
+    text = interests.lower()
+
+    # Keyword → dimension mapping
+    matches = []
+
+    kw_map = [
+        (["ai", "llm", "gpt", "claude", "machine learning", "ml", "langchain", "agent", "openai"],
+         {"key": "ai_tools", "label": "AI Tools & Dev", "weight": 35,
+          "description": "LLMs, coding assistants, AI productivity",
+          "_rss": [
+              {"url": "https://www.deeplearning.ai/the-batch/feed/", "title": "The Batch", "dimension": "ai_tools"},
+              {"url": "https://simonwillison.net/atom/everything/", "title": "Simon Willison's Weblog", "dimension": "ai_tools"},
+              {"url": "https://buttondown.com/ainews/rss", "title": "AI News", "dimension": "ai_tools"},
+          ],
+          "_reddit": ["MachineLearning", "LocalLLaMA", "ChatGPT"],
+          "_youtube": ["Andrej Karpathy", "Fireship", "Two Minute Papers"]}),
+
+        (["defi", "crypto", "bitcoin", "ethereum", "web3", "blockchain", "nft", "solana"],
+         {"key": "defi", "label": "DeFi & Crypto", "weight": 25,
+          "description": "Decentralised finance, blockchain protocols, crypto markets",
+          "_rss": [
+              {"url": "https://bankless.com/feed", "title": "Bankless", "dimension": "defi"},
+              {"url": "https://thedefiant.io/feed", "title": "The Defiant", "dimension": "defi"},
+          ],
+          "_reddit": ["defi", "ethfinance", "CryptoCurrency"],
+          "_youtube": ["Bankless", "Coin Bureau"]}),
+
+        (["indie", "solo founder", "indiehacker", "indie hacker", "bootstrapped", "saas", "micro-saas"],
+         {"key": "indie_hacking", "label": "Indie Hacking", "weight": 25,
+          "description": "Solo founders, bootstrapped SaaS, side projects",
+          "_rss": [
+              {"url": "https://www.indiehackers.com/feed.rss", "title": "Indie Hackers", "dimension": "indie_hacking"},
+              {"url": "https://levels.io/rss/", "title": "levels.io blog", "dimension": "indie_hacking"},
+          ],
+          "_reddit": ["indiehackers", "SideProject", "SaaS"],
+          "_youtube": ["levels.io", "Starter Story"]}),
+
+        (["startup", "vc", "venture", "funding", "techcrunch", "yc", "y combinator"],
+         {"key": "startups", "label": "Startups & VC", "weight": 20,
+          "description": "Venture capital, funding rounds, growth stage startups",
+          "_rss": [
+              {"url": "https://techcrunch.com/feed/", "title": "TechCrunch", "dimension": "startups"},
+              {"url": "https://news.ycombinator.com/rss", "title": "Hacker News", "dimension": "startups"},
+          ],
+          "_reddit": ["startups", "entrepreneur"],
+          "_youtube": ["Y Combinator", "20VC"]}),
+
+        (["seo", "search", "google", "keyword", "rank", "backlink", "serp"],
+         {"key": "seo", "label": "SEO & Growth", "weight": 20,
+          "description": "Search engine optimisation, content marketing, growth hacking",
+          "_rss": [
+              {"url": "https://searchengineland.com/feed", "title": "Search Engine Land", "dimension": "seo"},
+              {"url": "https://www.searchenginejournal.com/feed/", "title": "Search Engine Journal", "dimension": "seo"},
+          ],
+          "_reddit": ["SEO", "bigseo"],
+          "_youtube": ["Ahrefs", "Neil Patel"]}),
+
+        (["stock", "market", "invest", "finance", "equity", "trading", "nasdaq", "s&p"],
+         {"key": "markets", "label": "Markets & Finance", "weight": 20,
+          "description": "Equities, macro, personal finance, trading",
+          "_rss": [
+              {"url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", "title": "WSJ Markets", "dimension": "markets"},
+              {"url": "https://feeds.bloomberg.com/markets/news.rss", "title": "Bloomberg Markets", "dimension": "markets"},
+          ],
+          "_reddit": ["investing", "stocks", "wallstreetbets"],
+          "_youtube": ["CNBC", "Bloomberg Technology"]}),
+    ]
+
+    chosen = []
+    rss_out, reddit_out, yt_out = [], [], []
+
+    for keywords, config in kw_map:
+        if any(kw in text for kw in keywords):
+            entry = {k: v for k, v in config.items() if not k.startswith("_")}
+            chosen.append(entry)
+            rss_out.extend(config.get("_rss", []))
+            for sub in config.get("_reddit", []):
+                if sub not in reddit_out:
+                    reddit_out.append(sub)
+            for ch in config.get("_youtube", []):
+                if ch not in yt_out:
+                    yt_out.append(ch)
+
+    # Default if nothing matched
+    if not chosen:
+        chosen = [
+            {"key": "ai_tools",  "label": "AI & Technology", "weight": 40,
+             "description": "AI tools, software, developer ecosystem"},
+            {"key": "startups",  "label": "Startups & VC",   "weight": 35,
+             "description": "Venture capital, funding, entrepreneurship"},
+            {"key": "markets",   "label": "Markets",          "weight": 25,
+             "description": "Financial markets and macro trends"},
+        ]
+        rss_out = [
+            {"url": "https://news.ycombinator.com/rss", "title": "Hacker News", "dimension": "ai_tools"},
+            {"url": "https://techcrunch.com/feed/",     "title": "TechCrunch",  "dimension": "startups"},
+        ]
+        reddit_out = ["technology", "entrepreneur", "investing"]
+        yt_out = ["Lex Fridman", "Y Combinator"]
+
+    # Trim to max 5 dimensions and rebalance weights
+    chosen = chosen[:5]
+    per = 100 // len(chosen)
+    remainder = 100 - per * len(chosen)
+    for i, d in enumerate(chosen):
+        d["weight"] = per + (1 if i < remainder else 0)
+
+    return {
+        "dimensions": chosen,
+        "sources": {
+            "rss":     rss_out[:9],
+            "reddit":  reddit_out[:5],
+            "youtube": yt_out[:4],
+        }
+    }
 
 
 @app.route("/api/run", methods=["POST"])
