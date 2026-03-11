@@ -376,8 +376,8 @@ Rules:
             ("anthropic", "ANTHROPIC_API_KEY", "claude-haiku-4-5-20251001"),
             ("openai",    "OPENAI_API_KEY",    "gpt-4o-mini"),
             ("gemini",    "GEMINI_API_KEY",    "gemini-2.5-flash"),
-            ("dashscope", "DASHSCOPE_API_KEY", "qwen-turbo"),
-            ("zhipu",     "ZHIPU_API_KEY",     "glm-4"),
+            ("dashscope", "DASHSCOPE_API_KEY", "qwen-plus"),
+            ("zhipu",     "ZHIPU_API_KEY",     "glm-4.6"),
             ("kimi",      "KIMI_API_KEY",      "kimi-k2"),
             ("ernie",     "ERNIE_API_KEY",     "ernie-4.5"),
         ]:

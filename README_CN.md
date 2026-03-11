@@ -144,51 +144,67 @@ IntelFlow 的核心概念是**维度**——AI 用来组织研究方向的独立
 ## 系统架构
 
 ```
-                        IntelFlow 流水线（约 25 分钟）
- ============================================================================
+                     IntelFlow AI-First 流水线
 
- 采集（并行）                预处理              生成（并行）               发布
- ______________________     ___________         ____________________     ________
-| Web 搜索              |   |           |       |                    |   |        |
-| RSS 订阅              |   |  prepare  |       |  板块 1（中+英）    |   | 微信   |
-| Hacker News          |-->|  briefing |--+--->|  板块 2（中+英）    |-->| 飞书   |
-| GitHub Trending      |   |   .py     |  |   |  板块 3（中+英）    |   | WP     |
-| Reddit               |   |___________|  |   |  板块 N（中+英）    |   |________|
-| YouTube 转录          |        |         |   |____________________|
-| 自定义采集器           |        v         |            |
-|______________________|   AI 搜索验证     |            v
-                                          |     assemble_report.py
-                                          +------------+
+  用户描述兴趣（自然语言）
+         │
+         ▼
+  Quick Setup 对话
+  "AI 工具、加密货币、独立开发…"
+         │  AI 分析 → 推荐维度 + 信息源
+         ▼
+  focus.json（维度配置 + 权重）
+         │
+         ▼
+  ┌──────────────────────────────────────────┐
+  │            AI Agent 并行执行              │
+  │                                          │
+  │  维度 1 ──► web_search ──► 中文 + 英文   │
+  │  维度 2 ──► web_search ──► 中文 + 英文   │
+  │  维度 3 ──► web_search ──► 中文 + 英文   │
+  │  维度 N ──► web_search ──► 中文 + 英文   │
+  │                                          │
+  │  LLM 自主决定：搜什么 / 搜几次 / 怎么分析  │
+  └──────────────────────────────────────────┘
+         │
+         ▼
+  assemble（速览 + 精华 + 拼装完整日报）
+         │
+         ▼
+  ┌─────────────────┐
+  │      发布        │
+  │  微信公众号       │
+  │  飞书文档         │
+  │  WordPress       │
+  └─────────────────┘
+
+  可选插件（plugins/collect_*.py 自动发现）：
+  RSS / Hacker News / GitHub Trending / Reddit / YouTube 转录
 ```
 
 **关键设计：**
 
-- 每个采集器有 10 分钟超时——单个慢源不会阻塞整条流水线
-- AI 模型可插拔——切换厂商不需要改任何流水线代码
-- 失败板块自动重试一次，不影响其他板块
-- 内置采集器（RSS、HN、GitHub、Reddit、YouTube）无需额外 API Key
-- 双语生成并行运行——不是先生成一种语言再翻译
-
-**扩展自定义采集器：**
-
-```bash
-# 创建 scripts/collect_mydata.py
-# 接受 --date 和 --output 参数，输出 raw_mydata.json
-# 就这样——流水线自动发现 collect_*.py 脚本
-```
+- **AI 即采集器** — LLM 携带 web search tool 自主搜索，不需要预配置爬虫
+- **一个 Key 即可启动** — 自动检测可用模型（Claude → GPT-4o → Gemini → 通义 → …）
+- **维度并行** — 所有维度同时生成，互不阻塞
+- **双语原生** — 中英文并行生成，不是翻译
+- **模型可插拔** — 切换厂商无需改代码
+- **插件可选** — `plugins/collect_*.py` 自动接入，用于补充结构化数据
 
 ---
 
 ## 支持的 AI 模型
 
-| 厂商 | 模型 | 说明 |
-|------|------|------|
-| Anthropic | Claude Sonnet / Opus / Haiku | 分析深度最强 |
-| OpenAI | GPT-4o / GPT-4o-mini / o1 | 全球可用 |
-| Google | Gemini 2.5 Pro / Flash | 有免费额度 |
-| 智谱 AI | GLM-4-Plus / GLM-4 | 中文能力优秀 |
-| 阿里通义 | Qwen-Max / Plus / Turbo | OpenAI 兼容接口 |
-| Ollama | Llama 3 / Mistral / Qwen2 | 100% 本地运行，无需 API |
+| 厂商 | 推荐模型 | 原生搜索 | API 地址 | 获取 Key |
+|------|----------|----------|----------|----------|
+| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
+| **OpenAI** | gpt-4o / gpt-4o-search-preview / o3-mini | ✅ search model | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
+| **Google** | gemini-2.5-pro / gemini-2.5-flash | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
+| **智谱 AI** | glm-4.6 / glm-4-plus | ✅ web_search 插件 | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
+| **阿里通义** | qwen3-max / qwen-max / qwen-plus | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com/) |
+| **月之暗面** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
+| **百度文心** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
+| **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ 本地无联网 | `http://localhost:11434/v1` | 本地运行，无需 Key |
 
 ---
 

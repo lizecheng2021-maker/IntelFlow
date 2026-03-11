@@ -182,14 +182,16 @@ Beyond dimensions, you can configure:
 
 ## Supported AI Models
 
-| Provider | Models | Notes |
-|----------|--------|-------|
-| Anthropic | Claude Sonnet / Opus / Haiku | Best analytical depth |
-| OpenAI | GPT-4o / GPT-4o-mini / o1 | Widely available |
-| Google | Gemini 2.5 Pro / Flash | Free tier available |
-| Zhipu AI | GLM-4-Plus / GLM-4 | Best for Chinese content |
-| Alibaba | Qwen-Max / Plus / Turbo | OpenAI-compatible API |
-| Ollama | Llama 3 / Mistral / Qwen2 | 100% local, no API key needed |
+| Provider | Recommended Models | Web Search | API Endpoint | Get Key |
+|----------|--------------------|------------|--------------|---------|
+| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
+| **OpenAI** | gpt-4o / gpt-4o-search-preview / o3-mini | ✅ search model | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
+| **Google** | gemini-2.5-pro / gemini-2.5-flash | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
+| **Zhipu AI** | glm-4.6 / glm-4-plus | ✅ web_search plugin | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
+| **Alibaba** | qwen3-max / qwen-max / qwen-plus | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.aliyun.com](https://dashscope.console.aliyun.com/) |
+| **Moonshot** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
+| **Baidu ERNIE** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
+| **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ local only | `http://localhost:11434/v1` | No key needed |
 
 ---
 
