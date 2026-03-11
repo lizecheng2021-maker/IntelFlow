@@ -1,22 +1,99 @@
 {
   "_comment": "Define YOUR dimensions. Add/remove/rename freely. These are just defaults.",
   "dimensions": {
-    "ai_tech": {"enabled": true, "weight": 25, "label": "AI & Technology", "description": "Model releases, tool launches, research"},
-    "finance": {"enabled": true, "weight": 15, "label": "Finance & Markets", "description": "Capital flows, earnings, market changes"},
-    "seo": {"enabled": true, "weight": 15, "label": "SEO & Search", "description": "Algorithm updates, traffic patterns"},
-    "startup": {"enabled": true, "weight": 15, "label": "Startups & Business", "description": "Launches, funding, business models"},
-    "ecommerce": {"enabled": true, "weight": 10, "label": "E-commerce", "description": "Platform changes, conversion tactics"},
-    "creator": {"enabled": true, "weight": 10, "label": "Creator Economy", "description": "Audience building, monetization"},
-    "macro": {"enabled": true, "weight": 10, "label": "Macro & Policy", "description": "Regulatory shifts, geopolitical signals"}
+    "ai_tech": {
+      "enabled": true,
+      "weight": 25,
+      "label": "AI & Technology",
+      "description": "Model releases, tool launches, research",
+      "search_queries": [
+        "AI tools news {date}",
+        "LLM model release {date}",
+        "AI developer tools update {date}",
+        "machine learning research {date}"
+      ]
+    },
+    "finance": {
+      "enabled": true,
+      "weight": 15,
+      "label": "Finance & Markets",
+      "description": "Capital flows, earnings, market changes",
+      "search_queries": [
+        "stock market news {date}",
+        "venture capital funding {date}",
+        "fintech market update {date}"
+      ]
+    },
+    "seo": {
+      "enabled": true,
+      "weight": 15,
+      "label": "SEO & Search",
+      "description": "Algorithm updates, traffic patterns",
+      "search_queries": [
+        "Google algorithm update {date}",
+        "SEO news {date}",
+        "search ranking changes {date}"
+      ]
+    },
+    "startup": {
+      "enabled": true,
+      "weight": 15,
+      "label": "Startups & Business",
+      "description": "Launches, funding, business models",
+      "search_queries": [
+        "startup funding news {date}",
+        "new SaaS product launch {date}",
+        "indie hacker product {date}"
+      ]
+    },
+    "ecommerce": {
+      "enabled": true,
+      "weight": 10,
+      "label": "E-commerce",
+      "description": "Platform changes, conversion tactics",
+      "search_queries": [
+        "ecommerce platform update {date}",
+        "Shopify Amazon news {date}",
+        "online retail trends {date}"
+      ]
+    },
+    "creator": {
+      "enabled": true,
+      "weight": 10,
+      "label": "Creator Economy",
+      "description": "Audience building, monetization",
+      "search_queries": [
+        "creator economy news {date}",
+        "YouTube newsletter monetization {date}",
+        "content creator platform update {date}"
+      ]
+    },
+    "macro": {
+      "enabled": true,
+      "weight": 10,
+      "label": "Macro & Policy",
+      "description": "Regulatory shifts, geopolitical signals",
+      "search_queries": [
+        "AI regulation policy {date}",
+        "tech policy geopolitics {date}",
+        "global economic signal {date}"
+      ]
+    }
   },
+  "_comment_search_queries": [
+    "search_queries is optional. If omitted, the pipeline auto-generates queries from label + description.",
+    "Use {date} as a placeholder — it will be replaced with the run date (e.g. 2026-03-11).",
+    "Provide 3-5 queries per dimension for best coverage.",
+    "More specific queries = higher quality search results = better AI analysis."
+  ],
   "dimension_source_mapping": {
-    "_comment": "Map each dimension to data source keys from sources.json. Unmapped dimensions use all sources.",
-    "ai_tech": ["hackernews", "github_trending", "rss_tech"],
-    "finance": ["fmp", "akshare", "yfinance"],
-    "seo": ["seo_rss"],
-    "startup": ["producthunt", "reddit"],
-    "creator": ["rss_creator"],
-    "macro": ["gnews", "rss_news"]
+    "_comment": "Maps each dimension to RSS feed categories in sources.json for the RSS plugin.",
+    "ai_tech": ["tech", "ai"],
+    "finance": ["finance", "markets"],
+    "seo": ["seo"],
+    "startup": ["startup", "business"],
+    "creator": ["creator"],
+    "macro": ["news", "policy"]
   },
   "languages": ["en"],
   "report_length": "standard",

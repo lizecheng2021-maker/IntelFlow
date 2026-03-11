@@ -215,6 +215,8 @@ def _get_env_key(provider):
         "gemini": "GEMINI_API_KEY",
         "zhipu": "ZHIPU_API_KEY",
         "dashscope": "DASHSCOPE_API_KEY",
+        "kimi": "KIMI_API_KEY",
+        "ernie": "ERNIE_API_KEY",
         "ollama": "",
     }
     return mapping.get(provider, "")

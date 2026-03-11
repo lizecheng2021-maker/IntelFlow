@@ -16,6 +16,8 @@
     "gemini": {"env_key": "GEMINI_API_KEY", "models": ["gemini-2.5-pro", "gemini-2.5-flash"]},
     "zhipu": {"env_key": "ZHIPU_API_KEY", "models": ["glm-4-plus", "glm-4"]},
     "dashscope": {"env_key": "DASHSCOPE_API_KEY", "models": ["qwen-max", "qwen-plus", "qwen-turbo"]},
-    "ollama": {"env_key": null, "base_url": "http://localhost:11434", "models": ["llama3", "mistral", "qwen2"]}
+    "ollama": {"env_key": null, "base_url": "http://localhost:11434", "models": ["llama3", "mistral", "qwen2"]},
+    "kimi": {"env_key": "KIMI_API_KEY", "models": ["kimi-k2.5", "kimi-k2"]},
+    "ernie": {"env_key": "ERNIE_API_KEY", "models": ["ernie-4.5", "ernie-x1.1", "ernie-4.5-turbo"]}
   }
 }

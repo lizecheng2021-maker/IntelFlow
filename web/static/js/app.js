@@ -268,11 +268,13 @@ function pollStatus() {
 // AI Model config
 const MODEL_OPTIONS = {
     anthropic: ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-haiku-4-20250414"],
-    openai: ["gpt-4o", "gpt-4o-mini", "o1"],
+    openai: ["gpt-4o", "gpt-4o-search-preview", "gpt-4o-mini", "o1"],
     gemini: ["gemini-2.5-pro", "gemini-2.5-flash"],
-    zhipu: ["glm-4-plus", "glm-4"],
-    dashscope: ["qwen-max", "qwen-plus", "qwen-turbo"],
-    ollama: ["llama3", "mistral", "qwen2"]
+    zhipu: ["glm-4.6", "glm-4-plus", "glm-4"],
+    dashscope: ["qwen3-max", "qwen-max", "qwen-plus", "qwen-turbo"],
+    kimi: ["kimi-k2.5", "kimi-k2"],
+    ernie: ["ernie-4.5", "ernie-x1.1", "ernie-4.5-turbo"],
+    ollama: ["llama3", "mistral", "qwen2", "deepseek-r1"]
 };
 
 function onProviderChange() {

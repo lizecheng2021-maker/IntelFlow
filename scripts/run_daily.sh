@@ -1,33 +1,15 @@
 #!/bin/bash
-# ============================================
-# IntelFlow Daily Pipeline
-# Automated data collection, AI analysis, and report generation
+# ============================================================
+# IntelFlow Daily Pipeline — AI-first wrapper
 #
-# Pipeline steps:
-#  1. Multi-source data collection (parallel, 10min timeout each)
-#  2. Data preprocessing (raw_*.json → briefing.json)
-#  3. Split briefing into per-dimension data files
-#  4. Section-based parallel report generation + assembly
-#  5. Optional: AI cover image generation
-#  6. Optional: Multi-platform publishing
-#  7. Summary report
+# Replaces the 19-step bash pipeline with a single Python call.
+# All logic lives in scripts/run_pipeline.py.
 #
-# Weekend: Weekly deep analysis (aggregates 7 days)
-# Month-end: Monthly review (aggregates 4 weeks)
-#
-# ============================================
-# ADDING A NEW DATA SOURCE
-# ============================================
-# 1. Create scripts/collect_yoursource.py
-#    - Accept --date and --output args
-#    - Check if its source is enabled via utils.load_sources_config()
-#    - Save output as raw_yoursource.json in the output dir
-# 2. Add an entry to config/sources.json under builtin_sources or custom_sources
-#    - Set "enabled": true, "type", "description", "requires_key"
-# 3. Map to dimensions in config/focus.json so the analysis engine knows
-#    which report section this data feeds into
-# 4. That's it — the pipeline auto-discovers collect_*.py scripts
-# ============================================
+# Usage:
+#   ./scripts/run_daily.sh                    # today, daily report
+#   TODAY=2026-03-11 ./scripts/run_daily.sh   # specific date
+#   REPORT_TYPE=weekly ./scripts/run_daily.sh # weekly report
+# ============================================================
 
 set -e
 
@@ -37,294 +19,49 @@ if [ -z "$CAFFEINATED" ] && command -v caffeinate &>/dev/null; then
     exec caffeinate -s -i "$0" "$@"
 fi
 
-# Project root
+# Paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
-# Date config
-TODAY="${TODAY:-$(date +%Y-%m-%d)}"
-DAY_OF_WEEK=$(date -j -f "%Y-%m-%d" "$TODAY" +%u 2>/dev/null || date -d "$TODAY" +%u)
-DAY_OF_MONTH=$(date -j -f "%Y-%m-%d" "$TODAY" +%d 2>/dev/null || date -d "$TODAY" +%d)
-OUTPUT_DIR="$PROJECT_DIR/output/$TODAY"
-STATE_DIR="$PROJECT_DIR/state"
-LOCK_FILE="$STATE_DIR/.daily_lock"
+# Date and type
+DATE="${TODAY:-$(date +%Y-%m-%d)}"
+REPORT_TYPE="${REPORT_TYPE:-daily}"
+OUTPUT_DIR="output/$DATE"
 
-# Python
+# Python: prefer .venv if present
 PYTHON="${PYTHON:-python3}"
 if [ -f "$PROJECT_DIR/.venv/bin/python" ]; then
     PYTHON="$PROJECT_DIR/.venv/bin/python"
 fi
 
-# Load .env
+# Load .env if present
 if [ -f "$PROJECT_DIR/.env" ]; then
     set -a
     source "$PROJECT_DIR/.env"
     set +a
 fi
 
-# Load config
-CONFIG_DIR="$PROJECT_DIR/config"
-
-# ============================================
-# Helper functions
-# ============================================
-
-log() { echo "[$(date +%H:%M:%S)] $1"; }
-err() { echo "[$(date +%H:%M:%S)] ERROR: $1" >&2; }
+# Lock file — prevent concurrent runs
+STATE_DIR="$PROJECT_DIR/state"
+LOCK_FILE="$STATE_DIR/.daily_lock"
+mkdir -p "$STATE_DIR" "$OUTPUT_DIR"
 
 cleanup() {
     rm -f "$LOCK_FILE"
-    log "Pipeline finished. Lock released."
 }
 trap cleanup EXIT
 
-check_lock() {
-    if [ -f "$LOCK_FILE" ]; then
-        err "Pipeline already running (lock file exists). Remove $LOCK_FILE to force."
-        exit 1
-    fi
-}
-
-run_with_timeout() {
-    local timeout=$1
-    local label=$2
-    shift 2
-    log "Starting: $label"
-    if timeout "$timeout" "$@" 2>&1; then
-        log "Done: $label"
-    else
-        err "Failed or timed out: $label (continuing...)"
-    fi
-}
-
-# ============================================
-# Pre-flight checks
-# ============================================
-
-mkdir -p "$OUTPUT_DIR" "$STATE_DIR" "$CONFIG_DIR"
-
-check_lock
+if [ -f "$LOCK_FILE" ]; then
+    echo "ERROR: Pipeline already running (lock exists). Remove $LOCK_FILE to force." >&2
+    exit 1
+fi
 echo "$$" > "$LOCK_FILE"
 
-log "=== IntelFlow Daily Pipeline ==="
-log "Date: $TODAY"
-log "Output: $OUTPUT_DIR"
-
-# ============================================
-# Step 1: Parallel Data Collection
-# ============================================
-
-log "=== Step 1: Data Collection (parallel) ==="
-log "Auto-discovering collect_*.py scripts (each checks sources.json internally)"
-
-PIDS=()
-LABELS=()
-
-# Launch collectors in parallel
-launch_collector() {
-    local script=$1
-    local label=$2
-    if [ -f "$SCRIPT_DIR/$script" ]; then
-        $PYTHON "$SCRIPT_DIR/$script" --date "$TODAY" --output "$OUTPUT_DIR" &
-        PIDS+=($!)
-        LABELS+=("$label")
-    fi
-}
-
-# Auto-discover all collect_*.py scripts instead of hardcoding
-for collector in "$SCRIPT_DIR"/collect_*.py; do
-    [ -f "$collector" ] || continue
-    script_name=$(basename "$collector")
-    # Derive a human label from filename: collect_foo_bar.py → "foo bar"
-    label=$(echo "$script_name" | sed 's/^collect_//;s/\.py$//;s/_/ /g')
-    launch_collector "$script_name" "$label"
-done
-
-# Also launch supplementary search scripts
-launch_collector "search_news_supplement.py" "SerpAPI Supplement"
-
-# Wait for all collectors (10 min timeout)
-TIMEOUT=600
-START_TIME=$(date +%s)
-for i in "${!PIDS[@]}"; do
-    pid=${PIDS[$i]}
-    label=${LABELS[$i]}
-    ELAPSED=$(( $(date +%s) - START_TIME ))
-    REMAINING=$(( TIMEOUT - ELAPSED ))
-    if [ $REMAINING -le 0 ]; then
-        err "Timeout waiting for: $label (killing)"
-        kill "$pid" 2>/dev/null || true
-        continue
-    fi
-    if wait "$pid" 2>/dev/null; then
-        log "Collected: $label"
-    else
-        err "Failed: $label (non-critical, continuing)"
-    fi
-done
-
-# Count collected files
-RAW_COUNT=$(ls "$OUTPUT_DIR"/raw_*.json 2>/dev/null | wc -l | tr -d ' ')
-log "Collected $RAW_COUNT raw data files"
-
-if [ "$RAW_COUNT" -eq 0 ]; then
-    err "No data collected. Check API keys and network. Aborting."
-    exit 1
-fi
-
-# ============================================
-# Step 2: Preprocessing
-# ============================================
-
-log "=== Step 2: Preprocessing ==="
-run_with_timeout 300 "Prepare briefing" \
-    $PYTHON "$SCRIPT_DIR/prepare_briefing.py" --date "$TODAY" --output "$OUTPUT_DIR"
-
-if [ ! -f "$OUTPUT_DIR/briefing.json" ]; then
-    err "briefing.json not created. Aborting."
-    exit 1
-fi
-
-BRIEFING_SIZE=$(wc -c < "$OUTPUT_DIR/briefing.json" | tr -d ' ')
-log "briefing.json: ${BRIEFING_SIZE} bytes"
-
-# ============================================
-# Step 3: Split into sections
-# ============================================
-
-log "=== Step 3: Split Briefing ==="
-run_with_timeout 120 "Split briefing" \
-    $PYTHON "$SCRIPT_DIR/split_briefing.py" --date "$TODAY" --output "$OUTPUT_DIR"
-
-SECTIONS_DIR="$OUTPUT_DIR/sections"
-SECTION_COUNT=$(ls "$SECTIONS_DIR"/*.json 2>/dev/null | wc -l | tr -d ' ')
-log "Split into $SECTION_COUNT dimension files"
-
-# ============================================
-# Step 4: Section-based Report Generation
-# ============================================
-
-log "=== Step 4: Report Generation (model-agnostic) ==="
-
-# Generate sections using configured LLM (supports Claude, GPT, Gemini, Zhipu, Qwen, Ollama)
-run_with_timeout 1200 "Generate sections" \
-    $PYTHON "$SCRIPT_DIR/generate_sections.py" --date "$TODAY" --output "$OUTPUT_DIR" --type daily
-
-# Assemble final report
-log "Assembling final report..."
-run_with_timeout 300 "Assemble report" \
-    $PYTHON "$SCRIPT_DIR/assemble_report.py" --date "$TODAY" --output "$OUTPUT_DIR" --type daily
-
-# Check outputs
-for lang in zh en; do
-    report="$OUTPUT_DIR/daily_${lang}.md"
-    if [ -f "$report" ]; then
-        SIZE=$(wc -c < "$report" | tr -d ' ')
-        WORDS=$(wc -w < "$report" | tr -d ' ')
-        log "daily_${lang}.md: ${SIZE} bytes, ~${WORDS} words"
-    else
-        err "daily_${lang}.md not generated"
-    fi
-done
-
-# ============================================
-# Step 5: Publishing (if configured)
-# ============================================
-
-log "=== Step 5: Publishing ==="
-
-# WordPress
-if [ -n "$WORDPRESS_URL" ] && [ -n "$WORDPRESS_APP_PASSWORD" ]; then
-    if [ -f "$OUTPUT_DIR/daily_en.md" ]; then
-        run_with_timeout 120 "Publish WordPress" \
-            $PYTHON "$SCRIPT_DIR/publish_wordpress.py" --date "$TODAY" --output "$OUTPUT_DIR"
-    fi
-else
-    log "WordPress not configured, skipping."
-fi
-
-# Feishu
-if [ -n "$FEISHU_WEBHOOK" ]; then
-    if [ -f "$OUTPUT_DIR/daily_zh.md" ]; then
-        run_with_timeout 120 "Publish Feishu" \
-            $PYTHON "$SCRIPT_DIR/publish_feishu.py" --date "$TODAY" --output "$OUTPUT_DIR"
-    fi
-else
-    log "Feishu not configured, skipping."
-fi
-
-# Twitter/X
-if [ -n "$TWITTER_API_KEY" ] && [ -n "$TWITTER_ACCESS_TOKEN" ]; then
-    TWITTER_ENABLED=$(python3 -c "
-import json, pathlib
-p = pathlib.Path('$CONFIG_DIR/platforms.json')
-if p.exists():
-    d = json.loads(p.read_text())
-    print('true' if d.get('twitter', {}).get('enabled', False) else 'false')
-else:
-    print('false')
-" 2>/dev/null)
-    if [ "$TWITTER_ENABLED" = "true" ]; then
-        run_with_timeout 60 "Publish Twitter" \
-            $PYTHON "$SCRIPT_DIR/publish_twitter.py" --date "$TODAY"
-    else
-        log "Twitter disabled in platforms.json, skipping."
-    fi
-else
-    log "Twitter credentials not configured, skipping."
-fi
-
-# LinkedIn
-if [ -n "$LINKEDIN_ACCESS_TOKEN" ] && [ -n "$LINKEDIN_PERSON_URN" ]; then
-    LINKEDIN_ENABLED=$(python3 -c "
-import json, pathlib
-p = pathlib.Path('$CONFIG_DIR/platforms.json')
-if p.exists():
-    d = json.loads(p.read_text())
-    print('true' if d.get('linkedin', {}).get('enabled', False) else 'false')
-else:
-    print('false')
-" 2>/dev/null)
-    if [ "$LINKEDIN_ENABLED" = "true" ]; then
-        run_with_timeout 60 "Publish LinkedIn" \
-            $PYTHON "$SCRIPT_DIR/publish_linkedin.py" --date "$TODAY"
-    else
-        log "LinkedIn disabled in platforms.json, skipping."
-    fi
-else
-    log "LinkedIn credentials not configured, skipping."
-fi
-
-# ============================================
-# Step 6: Weekly / Monthly (if applicable)
-# ============================================
-
-if [ "$DAY_OF_WEEK" -eq 7 ]; then
-    log "=== Sunday: Generating Weekly Report ==="
-    if [ -f "$SCRIPT_DIR/assemble_report.py" ]; then
-        run_with_timeout 1200 "Weekly report" \
-            $PYTHON "$SCRIPT_DIR/assemble_report.py" --date "$TODAY" --output "$OUTPUT_DIR" --type weekly
-    fi
-fi
-
-if [ "$DAY_OF_MONTH" -ge 28 ]; then
-    NEXT_MONTH_DAY=$(date -j -v+4d -f "%Y-%m-%d" "$TODAY" +%d 2>/dev/null || date -d "$TODAY + 4 days" +%d)
-    if [ "$NEXT_MONTH_DAY" -lt 5 ]; then
-        log "=== Month-end: Generating Monthly Report ==="
-        if [ -f "$SCRIPT_DIR/assemble_report.py" ]; then
-            run_with_timeout 1800 "Monthly report" \
-                $PYTHON "$SCRIPT_DIR/assemble_report.py" --date "$TODAY" --output "$OUTPUT_DIR" --type monthly
-        fi
-    fi
-fi
-
-# ============================================
-# Summary
-# ============================================
-
-log "=== Pipeline Complete ==="
-log "Date: $TODAY"
-log "Output: $OUTPUT_DIR"
-ls -lh "$OUTPUT_DIR"/daily_*.md 2>/dev/null | while read line; do log "  $line"; done
-log "Total time: $(( $(date +%s) - START_TIME ))s"
+echo "=== IntelFlow Pipeline — $DATE ($REPORT_TYPE) ==="
+$PYTHON scripts/run_pipeline.py \
+    --date "$DATE" \
+    --output "$OUTPUT_DIR" \
+    --type "$REPORT_TYPE" \
+    "$@"
+echo "=== Done ==="

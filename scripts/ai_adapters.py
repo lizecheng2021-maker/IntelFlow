@@ -1,8 +1,23 @@
 """
 Unified LLM adapter layer.
 
-Provides a single interface to call Claude, OpenAI, Gemini, Zhipu, DashScope, and Ollama.
+Provides a single interface to call Claude, OpenAI, Gemini, Zhipu, DashScope,
+Ollama, Kimi (Moonshot), and ERNIE (Baidu).
 Prefers raw HTTP requests over SDKs for simplicity and fewer dependencies.
+
+Native web search support:
+  - ClaudeAdapter   : web_search_20250305 tool (Anthropic-managed)
+  - OpenAIAdapter   : gpt-4o-search-preview model
+  - GeminiAdapter   : google_search tool
+  - ZhipuAdapter    : web_search tool
+  - DashScopeAdapter: enable_search + search_strategy=agent
+  - OllamaAdapter   : falls back to generate() (no native search)
+  - KimiAdapter     : $web_search builtin_function tool
+  - ERNIEAdapter    : baidu_search plugin
+
+Note: DeepSeek's API does not yet support native web search. For regular
+generation via DeepSeek, use DashScopeAdapter with the DashScope-compatible
+endpoint, or an OpenAI-compatible wrapper pointed at the DeepSeek base URL.
 """
 
 import time
@@ -70,6 +85,15 @@ class LLMAdapter(ABC):
                 raise LLMError(f"{self.name} failed: {exc}") from exc
         raise LLMError(f"{self.name} failed after {self.MAX_RETRIES} retries: {last_err}")
 
+    @abstractmethod
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Generate a response using the provider's native web search capability.
+
+        Falls back to generate() when native search is unavailable or fails.
+        """
+        ...
+
     def test_connection(self) -> bool:
         try:
             result = self.generate("Say hello", max_tokens=32)
@@ -94,7 +118,7 @@ def _post(url: str, headers: dict, payload: dict, timeout: int = 120) -> dict:
 def _openai_compatible_generate(url: str, api_key: str, model: str,
                                 prompt: str, system: str,
                                 max_tokens: int, temperature: float) -> str:
-    """Shared helper for OpenAI-compatible APIs (OpenAI, Zhipu, DashScope)."""
+    """Shared helper for OpenAI-compatible APIs (OpenAI, Zhipu, DashScope, Kimi, ERNIE)."""
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
     messages = []
     if system:
@@ -143,6 +167,50 @@ class ClaudeAdapter(LLMAdapter):
         data = _post(self.API_URL, headers, payload)
         return data["content"][0]["text"]
 
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use Anthropic's web_search_20250305 tool for grounded responses.
+
+        Anthropic handles the search execution automatically; the response may
+        contain multiple content blocks (tool_use, tool_result, text).  We
+        extract and join all text-type blocks.
+        """
+        try:
+            headers = {
+                "Content-Type": "application/json",
+                "x-api-key": self.api_key,
+                "anthropic-version": "2023-06-01",
+                "anthropic-beta": "web-search-2025-03-05",
+            }
+            payload = {
+                "model": self.model,
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "messages": [{"role": "user", "content": prompt}],
+                "tools": [{
+                    "type": "web_search_20250305",
+                    "name": "web_search",
+                    "max_uses": 5,
+                }],
+            }
+            if system:
+                payload["system"] = system
+            data = _post(self.API_URL, headers, payload)
+            # Extract all text blocks from the response
+            texts = [
+                block["text"]
+                for block in data.get("content", [])
+                if block.get("type") == "text"
+            ]
+            result = "\n".join(texts).strip()
+            if result:
+                return result
+            # No text blocks — fall back (shouldn't normally happen)
+            return self.generate(prompt, system, max_tokens, temperature)
+        except Exception as exc:
+            logger.warning("ClaudeAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
 
 # ---------------------------------------------------------------------------
 # OpenAI
@@ -173,6 +241,19 @@ class OpenAIAdapter(LLMAdapter):
             self.API_URL, self.api_key, self.model,
             prompt, system, max_tokens, temperature)
 
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use gpt-4o-search-preview which has built-in web browsing."""
+        try:
+            # Override to search-capable model; keep non-GPT models as-is
+            search_model = "gpt-4o-search-preview" if "gpt" in self.model else self.model
+            return _openai_compatible_generate(
+                self.API_URL, self.api_key, search_model,
+                prompt, system, max_tokens, temperature)
+        except Exception as exc:
+            logger.warning("OpenAIAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
 
 # ---------------------------------------------------------------------------
 # Gemini (Google)
@@ -197,6 +278,25 @@ class GeminiAdapter(LLMAdapter):
         data = _post(url, {"Content-Type": "application/json"}, payload)
         return data["candidates"][0]["content"]["parts"][0]["text"]
 
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use Gemini's google_search grounding tool."""
+        try:
+            url = f"{self.API_BASE}/{self.model}:generateContent?key={self.api_key}"
+            contents = [{"parts": [{"text": prompt}]}]
+            payload = {
+                "contents": contents,
+                "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
+                "tools": [{"google_search": {}}],
+            }
+            if system:
+                payload["systemInstruction"] = {"parts": [{"text": system}]}
+            data = _post(url, {"Content-Type": "application/json"}, payload)
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception as exc:
+            logger.warning("GeminiAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
 
 # ---------------------------------------------------------------------------
 # Zhipu (GLM) — OpenAI-compatible
@@ -214,6 +314,29 @@ class ZhipuAdapter(LLMAdapter):
             self.API_URL, self.api_key, self.model,
             prompt, system, max_tokens, temperature)
 
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use Zhipu's built-in web_search tool."""
+        try:
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"}
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "tools": [{"type": "web_search"}],
+                "tool_choice": "auto",
+            }
+            data = _post(self.API_URL, headers, payload)
+            return data["choices"][0]["message"]["content"]
+        except Exception as exc:
+            logger.warning("ZhipuAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
 
 # ---------------------------------------------------------------------------
 # DashScope (Qwen) — OpenAI-compatible
@@ -230,6 +353,29 @@ class DashScopeAdapter(LLMAdapter):
         return _openai_compatible_generate(
             self.API_URL, self.api_key, self.model,
             prompt, system, max_tokens, temperature)
+
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use Qwen's enable_search with agent search strategy."""
+        try:
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"}
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "enable_search": True,
+                "search_options": {"search_strategy": "agent"},
+            }
+            data = _post(self.API_URL, headers, payload)
+            return data["choices"][0]["message"]["content"]
+        except Exception as exc:
+            logger.warning("DashScopeAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +399,112 @@ class OllamaAdapter(LLMAdapter):
         data = _post(url, {"Content-Type": "application/json"}, payload)
         return data["response"]
 
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Ollama has no native web search — delegates to generate()."""
+        return self.generate(prompt, system, max_tokens, temperature)
+
+
+# ---------------------------------------------------------------------------
+# Kimi (Moonshot AI)
+# ---------------------------------------------------------------------------
+
+class KimiAdapter(LLMAdapter):
+    BASE_URL = "https://api.moonshot.cn/v1/chat/completions"
+
+    @property
+    def name(self) -> str:
+        return "kimi"
+
+    def _call(self, prompt, system, max_tokens, temperature):
+        return _openai_compatible_generate(
+            self.BASE_URL, self.api_key, self.model,
+            prompt, system, max_tokens, temperature)
+
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use Kimi's $web_search builtin_function tool."""
+        try:
+            headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "tools": [{"type": "builtin_function", "function": {"name": "$web_search"}}],
+            }
+            resp = _post(self.BASE_URL, headers, payload)
+            choice = resp.get("choices", [{}])[0]
+            msg = choice.get("message", {})
+            content = msg.get("content", "") or ""
+            if content:
+                return content
+            return self.generate(prompt, system, max_tokens, temperature)
+        except Exception as exc:
+            logger.warning("KimiAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
+    def test_connection(self) -> bool:
+        try:
+            result = self.generate("Say hello in one word.", max_tokens=10)
+            return bool(result)
+        except Exception:
+            return False
+
+
+# ---------------------------------------------------------------------------
+# ERNIE (Baidu AI Studio)
+# ---------------------------------------------------------------------------
+
+class ERNIEAdapter(LLMAdapter):
+    BASE_URL = "https://aistudio.baidu.com/llm/lmapi/v3/chat/completions"
+
+    @property
+    def name(self) -> str:
+        return "ernie"
+
+    def _call(self, prompt, system, max_tokens, temperature):
+        return _openai_compatible_generate(
+            self.BASE_URL, self.api_key, self.model,
+            prompt, system, max_tokens, temperature)
+
+    def generate_with_search(self, prompt: str, system: str = "",
+                             max_tokens: int = 4096, temperature: float = 0.7) -> str:
+        """Use ERNIE's Baidu search plugin."""
+        try:
+            headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "plugins": ["baidu_search"],
+            }
+            resp = _post(self.BASE_URL, headers, payload)
+            choice = resp.get("choices", [{}])[0]
+            content = choice.get("message", {}).get("content", "") or ""
+            if content:
+                return content
+            return self.generate(prompt, system, max_tokens, temperature)
+        except Exception as exc:
+            logger.warning("ERNIEAdapter.generate_with_search failed (%s), falling back to generate()", exc)
+            return self.generate(prompt, system, max_tokens, temperature)
+
+    def test_connection(self) -> bool:
+        try:
+            result = self.generate("Say hello in one word.", max_tokens=10)
+            return bool(result)
+        except Exception:
+            return False
+
 
 # ---------------------------------------------------------------------------
 # Factory
@@ -265,6 +517,8 @@ _PROVIDERS: dict[str, type[LLMAdapter]] = {
     "zhipu": ZhipuAdapter,
     "dashscope": DashScopeAdapter,
     "ollama": OllamaAdapter,
+    "kimi": KimiAdapter,
+    "ernie": ERNIEAdapter,
 }
 
 
