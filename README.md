@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">⚡ IntelFlow</h1>
-  <p align="center"><strong>Your personal AI intelligence agent — because you can't afford to miss what's happening, but you can't afford to spend 3 hours reading about it either.</strong></p>
+  <p align="center"><strong>AI-powered intelligence agent + content engine — turn daily noise into bilingual briefings, then auto-publish to your entire social media matrix.</strong></p>
 </p>
 
 <p align="center">
@@ -14,22 +14,28 @@
 
 ---
 
-> **AI is exploding. New models drop weekly. Crypto never sleeps. Your Twitter feed is 80% noise.**
-> You need signal — but reading everything yourself doesn't scale.
+> **AI is exploding. New models drop weekly. Crypto never sleeps. Your feed is 80% noise.**
+> You need signal — but reading everything yourself doesn't scale. And hiring an editorial team isn't an option.
 >
-> IntelFlow runs every morning: an AI agent searches the web across the topics *you* define, writes a publication-quality briefing in your voice, and publishes it to WeChat, Feishu, and WordPress — before you finish your coffee.
+> IntelFlow runs every morning: an AI agent searches the web across the topics *you* define, writes a publication-quality briefing in your voice, and simultaneously publishes to WordPress, WeChat, Feishu, and Twitter — before you finish your coffee.
 >
-> One API key. Plain-language setup. No scrapers to maintain. No subscriptions.
+> One API key. Plain-language setup. No scrapers to maintain. No subscriptions. No editorial team.
 
 ![IntelFlow Demo](assets/demo/demo.gif)
 
-The only open-source **agentic** intelligence system that:
+### Two products in one
 
-- **Uses your LLM as an agent** — it searches the web autonomously, no pre-built scrapers, no fixed RSS lists
-- **Generates native Chinese + English briefings simultaneously** — not translation, two independent editorial voices
-- **Onboards in plain language** — type "AI tools, crypto, indie hacking" → AI suggests dimensions + sources, done
-- **Publishes to WordPress, WeChat Official Account, and Feishu in one command** — no other open-source project does all three
-- **Supports any LLM with native web search** — Claude, GPT-5, Gemini, Qwen3, Kimi, ERNIE, or local Ollama
+**🧠 Intelligence system** — daily briefings shaped by your analysis dimensions, in your editorial voice, so every issue sounds like *you* wrote it.
+
+**📡 Content engine / 自媒体矩阵** — bilingual articles (Chinese + English) auto-published across your entire platform stack. One pipeline feeds your blog, WeChat Official Account, Feishu knowledge base, and Twitter thread — simultaneously.
+
+The only open-source **agentic** system that:
+
+- **Uses your LLM as an agent** — it searches the web autonomously; no pre-built scrapers, no fixed RSS lists to maintain
+- **Generates native Chinese + English simultaneously** — not translation; two independent editorial voices, one pipeline
+- **Onboards in plain language** — type "AI tools, crypto, indie hacking" → AI agent suggests dimensions + sources, done in 60 seconds
+- **Publishes to 4 platforms in one command** — WordPress, WeChat Official Account, Feishu, Twitter/X; no other open-source project does all four
+- **Supports 8 LLM providers with native web search** — Claude, GPT-5, Gemini, Qwen3, Kimi, ERNIE, Zhipu, or local Ollama
 - **Self-hosted, production-grade, no vendor lock-in, no per-article fees**
 
 ---
@@ -39,13 +45,15 @@ The only open-source **agentic** intelligence system that:
 | | Morning Brew / The Rundown | Feedly / Curated | hn-digest / newsletter-gpt | **IntelFlow** |
 |---|---|---|---|---|
 | Bilingual native output | No — English only | No — English only | No — English only | **Yes — Chinese + English** |
-| WeChat + Feishu + WordPress | No | No | No | **Yes — one command** |
+| Multi-platform auto-publish | No | No | No | **Yes — WordPress + WeChat + Feishu + Twitter** |
+| AI content engine / 自媒体矩阵 | Human editorial team | Not applicable | No publishing pipeline | **Yes — one pipeline, all platforms** |
 | Custom analysis dimensions | No — fixed editorial | No — you curate manually | No — hardcoded topics | **Yes — fully configurable** |
 | Authentic editorial voice | Human teams required | Not applicable | Generic AI output | **Config file, no team needed** |
+| Agentic web search | No — manual curation | No — RSS only | No — static sources | **Yes — LLM searches autonomously** |
 | Self-hosted + production grade | No | No | Hobby-grade, fragile JSON | **Yes — failover built in** |
-| Cost | Subscription fees | Subscription fees | Free but limited | **Free with Gemini/Ollama · Pay only what your model charges per call** |
+| Cost | Subscription fees | Subscription fees | Free but limited | **Free with Gemini/Ollama · Pay only your LLM API cost** |
 
-Commercial products like Morning Brew need large editorial teams to achieve a consistent, authentic voice. Open-source alternatives are hobby projects with fragile storage and no publishing pipeline. IntelFlow is the only self-hosted system that delivers both production reliability and genuine editorial personality — configured entirely through a file.
+Commercial products like Morning Brew need large editorial teams for a consistent voice. Open-source alternatives are hobby projects with no publishing pipeline. IntelFlow is the only self-hosted system that delivers production-grade intelligence *and* distributes content across your entire 自媒体矩阵 — configured entirely through a file, no team required.
 
 ---
 
