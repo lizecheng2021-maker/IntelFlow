@@ -1,6 +1,6 @@
 <p align="center">
-  <h1 align="center">IntelFlow — Agentic Intelligence Briefing, Running 24/7</h1>
-  <p align="center"><strong>One API key. Describe your interests in plain language. An AI agent searches the web, writes the briefing, and publishes it — in Chinese and English.</strong></p>
+  <h1 align="center">⚡ IntelFlow</h1>
+  <p align="center"><strong>Your personal AI intelligence agent — because you can't afford to miss what's happening, but you can't afford to spend 3 hours reading about it either.</strong></p>
 </p>
 
 <p align="center">
@@ -13,6 +13,13 @@
 **[English](README.md)** | [中文](README_CN.md)
 
 ---
+
+> **AI is exploding. New models drop weekly. Crypto never sleeps. Your Twitter feed is 80% noise.**
+> You need signal — but reading everything yourself doesn't scale.
+>
+> IntelFlow runs every morning: an AI agent searches the web across the topics *you* define, writes a publication-quality briefing in your voice, and publishes it to WeChat, Feishu, and WordPress — before you finish your coffee.
+>
+> One API key. Plain-language setup. No scrapers to maintain. No subscriptions.
 
 ![IntelFlow Demo](assets/demo/demo.gif)
 

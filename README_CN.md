@@ -1,6 +1,6 @@
 <p align="center">
-  <h1 align="center">IntelFlow — AI Agent 驱动的情报引擎</h1>
-  <p align="center"><strong>一个 API Key，用自然语言描述兴趣，AI Agent 自动搜索全网、生成双语日报、多平台发布。</strong></p>
+  <h1 align="center">⚡ IntelFlow</h1>
+  <p align="center"><strong>你的专属 AI 情报 Agent — 每天自动读懂世界，用你的语气写出来，帮你发出去。</strong></p>
 </p>
 
 <p align="center">
@@ -13,6 +13,13 @@
 **[English](README.md)** | 中文
 
 ---
+
+> **AI 每周都在爆炸式更新。加密市场永不休市。社媒信息流 80% 是噪音。**
+> 你需要的不是更多信息——是能帮你过滤、分析、输出判断的系统。
+>
+> IntelFlow 每天早上自动运行：AI Agent 围绕**你定义的主题**搜索全网，用**你的语气**写出双语深度日报，同步发布到微信公众号、飞书、WordPress——你喝完咖啡，内容已经发出去了。
+>
+> 一个 API Key。自然语言配置。不需要维护爬虫。不需要订阅费。
 
 ![IntelFlow Demo](assets/demo/demo.gif)
 
