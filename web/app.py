@@ -358,29 +358,56 @@ Rules:
 
     result_json = None
 
-    if llm_cfg.get("provider") and llm_cfg.get("model"):
+    # Build effective LLM config: prefer ai.json, but fall back to any available key
+    def _resolve_llm_cfg():
+        """Return (provider, model, api_key) — tries ai.json first, then env vars."""
+        # 1. Use ai.json if fully configured
+        if llm_cfg.get("provider") and llm_cfg.get("model"):
+            provider = llm_cfg["provider"]
+            model = llm_cfg["model"]
+            api_key = llm_cfg.get("api_key") or ""
+            if not api_key:
+                env_key = _get_env_key(provider)
+                api_key = _read_env_key(env_key)
+            if api_key or provider == "ollama":
+                return {**llm_cfg, "api_key": api_key, "max_tokens": 1500, "temperature": 0.4}
+        # 2. Auto-detect any available API key from env / .env
+        for provider, env_key, model in [
+            ("anthropic", "ANTHROPIC_API_KEY", "claude-haiku-4-5-20251001"),
+            ("openai",    "OPENAI_API_KEY",    "gpt-4o-mini"),
+            ("gemini",    "GEMINI_API_KEY",    "gemini-2.5-flash"),
+            ("dashscope", "DASHSCOPE_API_KEY", "qwen-turbo"),
+            ("zhipu",     "ZHIPU_API_KEY",     "glm-4"),
+            ("kimi",      "KIMI_API_KEY",      "kimi-k2"),
+            ("ernie",     "ERNIE_API_KEY",     "ernie-4.5"),
+        ]:
+            api_key = _read_env_key(env_key)
+            if api_key:
+                return {"provider": provider, "model": model, "api_key": api_key,
+                        "max_tokens": 1500, "temperature": 0.4}
+        return None
+
+    def _read_env_key(env_key):
+        """Read a key from os.environ or .env file."""
+        val = os.environ.get(env_key, "")
+        if val:
+            return val
+        env_path = ROOT / ".env"
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                line = line.strip()
+                if line.startswith(f"{env_key}="):
+                    return line.split("=", 1)[1].strip()
+        return ""
+
+    effective_cfg = _resolve_llm_cfg()
+    if effective_cfg:
         try:
             import sys
             sys.path.insert(0, str(ROOT / "scripts"))
-            from ai_adapters import create_llm, LLMError  # noqa: PLC0415
+            from ai_adapters import create_llm  # noqa: PLC0415
 
-            # Resolve API key: config file first, then .env, then env vars
-            api_key = llm_cfg.get("api_key") or ""
-            if not api_key:
-                provider = llm_cfg.get("provider", "")
-                env_key = _get_env_key(provider)
-                api_key = os.environ.get(env_key, "")
-                if not api_key:
-                    env_path = ROOT / ".env"
-                    if env_path.exists():
-                        for line in env_path.read_text().splitlines():
-                            line = line.strip()
-                            if line.startswith(f"{env_key}="):
-                                api_key = line.split("=", 1)[1].strip()
-                                break
-
-            cfg = {**llm_cfg, "api_key": api_key, "max_tokens": 1500, "temperature": 0.4}
-            llm = create_llm(cfg)
+            llm = create_llm(effective_cfg)
             raw = llm.generate(user_prompt, system=system_prompt)
 
             # Strip markdown code fences if present
@@ -392,6 +419,8 @@ Rules:
                 raw = raw.rsplit("```", 1)[0].strip()
 
             result_json = json.loads(raw)
+            result_json["_source"] = "ai"
+            result_json["_model"] = effective_cfg.get("model", "")
         except Exception as exc:
             # LLM unavailable or parse error — fall through to keyword fallback
             app.logger.warning("onboard LLM call failed (%s), using fallback", exc)

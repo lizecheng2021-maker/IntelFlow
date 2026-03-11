@@ -151,11 +151,15 @@ async function sendOnboardMessage() {
         const redditCount = (data.sources?.reddit || []).length;
         const ytCount = (data.sources?.youtube || []).length;
 
-        appendBubble(
-            `Found ${dimCount} dimensions, ${rssCount} RSS feeds, ${redditCount} subreddits, and ${ytCount} YouTube channels. ` +
-            `Review the suggestions below and click "Apply this config →" when you're ready.`,
-            'ai'
-        );
+        const modelBadge = data._source === 'ai'
+            ? ` <span style="background:#4f46e5;color:white;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">✨ ${data._model || 'AI'}</span>`
+            : ` <span style="background:#374151;color:#9ca3af;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">keyword match</span>`;
+
+        const bubble = appendBubble('', 'ai');
+        bubble.innerHTML =
+            `Found <strong>${dimCount}</strong> dimensions, <strong>${rssCount}</strong> RSS feeds, ` +
+            `<strong>${redditCount}</strong> subreddits, and <strong>${ytCount}</strong> YouTube channels.${modelBadge}` +
+            `<br><span style="color:#94a3b8;font-size:13px;">Review below, then click "Apply this config →" when ready.</span>`;
 
         _pendingData = data;
         renderSuggestions(data);
@@ -386,8 +390,15 @@ async function applyConfig() {
         const sourcesOk = (await sourcesRes.json()).ok;
 
         if (focusOk && sourcesOk) {
-            appendBubble('Config saved! Redirecting you to the dashboard…', 'ai');
-            setTimeout(() => { window.location.href = '/?onboard=done'; }, 1200);
+            const savedBubble = appendBubble('', 'ai');
+            savedBubble.innerHTML =
+                `Config saved! Your AI agent is ready to run.<br>` +
+                `<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">` +
+                `<button class="btn btn-primary" onclick="runPipelineNow(this)" style="background:#10b981;">` +
+                `▶ Run pipeline now</button>` +
+                `<a href="/" class="btn" style="background:#1e2035;color:#e2e8f0;text-decoration:none;">` +
+                `Go to dashboard →</a></div>`;
+            btn.textContent = 'Saved ✓';
         } else {
             btn.textContent = 'Apply this config →';
             btn.disabled = false;
@@ -397,6 +408,40 @@ async function applyConfig() {
         btn.textContent = 'Apply this config →';
         btn.disabled = false;
         appendBubble(`Error: ${err.message}`, 'ai');
+    }
+}
+
+async function runPipelineNow(btn) {
+    btn.textContent = 'Starting…';
+    btn.disabled = true;
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+        const resp = await fetch('/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: today })
+        });
+        const result = await resp.json();
+        if (result.ok) {
+            const runBubble = appendBubble('', 'ai');
+            runBubble.innerHTML =
+                `Pipeline started! The AI agent is now:<br>` +
+                `<ul style="margin:8px 0 0 18px;color:#94a3b8;font-size:13px;line-height:1.8;">` +
+                `<li>Searching the web for each of your dimensions</li>` +
+                `<li>Generating bilingual analysis in parallel</li>` +
+                `<li>Publishing to configured platforms</li></ul>` +
+                `<a href="/" class="btn btn-primary" style="display:inline-block;margin-top:12px;text-decoration:none;">` +
+                `Watch progress on dashboard →</a>`;
+            btn.textContent = 'Running…';
+        } else {
+            appendBubble(`Failed to start: ${result.error || 'unknown error'}`, 'ai');
+            btn.textContent = '▶ Run pipeline now';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        appendBubble(`Error: ${err.message}`, 'ai');
+        btn.textContent = '▶ Run pipeline now';
+        btn.disabled = false;
     }
 }
 </script>

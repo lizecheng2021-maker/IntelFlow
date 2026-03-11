@@ -1,6 +1,6 @@
 <p align="center">
-  <h1 align="center">IntelFlow — Your Personal Intelligence Engine, Running 24/7</h1>
-  <p align="center"><strong>One API key. Define what you care about. Get a publication-quality daily briefing in two languages.</strong></p>
+  <h1 align="center">IntelFlow — Agentic Intelligence Briefing, Running 24/7</h1>
+  <p align="center"><strong>One API key. Describe your interests in plain language. An AI agent searches the web, writes the briefing, and publishes it — in Chinese and English.</strong></p>
 </p>
 
 <p align="center">
@@ -16,12 +16,13 @@
 
 ![IntelFlow Demo](assets/demo/demo.gif)
 
-The only open-source intelligence system that:
+The only open-source **agentic** intelligence system that:
 
+- **Uses your LLM as an agent** — it searches the web autonomously, no pre-built scrapers, no fixed RSS lists
 - **Generates native Chinese + English briefings simultaneously** — not translation, two independent editorial voices
+- **Onboards in plain language** — type "AI tools, crypto, indie hacking" → AI suggests dimensions + sources, done
 - **Publishes to WordPress, WeChat Official Account, and Feishu in one command** — no other open-source project does all three
-- **Lets you define your own analysis dimensions** — AI/Finance/Crypto/Biotech/SEO, anything you want
-- **Supports any LLM** — Claude, GPT-4, Gemini, Qwen, GLM, or local Ollama
+- **Supports any LLM with native web search** — Claude, GPT-4o, Gemini, Qwen, Kimi, ERNIE, or local Ollama
 - **Self-hosted, production-grade, no vendor lock-in, no per-article fees**
 
 ---

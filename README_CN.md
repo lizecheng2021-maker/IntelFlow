@@ -1,6 +1,6 @@
 <p align="center">
-  <h1 align="center">IntelFlow — 你的专属 AI 情报引擎</h1>
-  <p align="center"><strong>一个 API Key，告诉它你关注什么，每天自动生成双语深度日报。</strong></p>
+  <h1 align="center">IntelFlow — AI Agent 驱动的情报引擎</h1>
+  <p align="center"><strong>一个 API Key，用自然语言描述兴趣，AI Agent 自动搜索全网、生成双语日报、多平台发布。</strong></p>
 </p>
 
 <p align="center">
