@@ -18,3 +18,4 @@ Pillow>=10.0
 # openai>=1.0            # GPT API (also works for any OpenAI-compatible endpoint)
 # zhipuai>=2.0           # Zhipu GLM API
 # google-genai>=0.5      # Google Gemini API
+markdown>=3.5

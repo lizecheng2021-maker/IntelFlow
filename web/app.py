@@ -5,6 +5,11 @@ Users can set up API keys, data sources, focus areas, and schedule through the b
 """
 
 import json, os, subprocess, sys
+try:
+    import markdown as _markdown
+    def _md(text): return _markdown.markdown(text, extensions=["fenced_code", "tables", "nl2br"])
+except ImportError:
+    def _md(text): return "<pre>" + text + "</pre>"
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for
@@ -101,8 +106,8 @@ def view_report(date):
     report_dir = OUTPUT_DIR / date
     zh_path = report_dir / "daily_zh.md"
     en_path = report_dir / "daily_en.md"
-    zh_content = zh_path.read_text("utf-8") if zh_path.exists() else None
-    en_content = en_path.read_text("utf-8") if en_path.exists() else None
+    zh_content = _md(zh_path.read_text("utf-8")) if zh_path.exists() else None
+    en_content = _md(en_path.read_text("utf-8")) if en_path.exists() else None
     return render_template("report.html", date=date, zh=zh_content, en=en_content)
 
 
