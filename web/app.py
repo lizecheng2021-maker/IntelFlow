@@ -374,11 +374,11 @@ Rules:
         # 2. Auto-detect any available API key from env / .env
         for provider, env_key, model in [
             ("anthropic", "ANTHROPIC_API_KEY", "claude-haiku-4-5-20251001"),
-            ("openai",    "OPENAI_API_KEY",    "gpt-4o-mini"),
+            ("openai",    "OPENAI_API_KEY",    "gpt-5-mini"),
             ("gemini",    "GEMINI_API_KEY",    "gemini-2.5-flash"),
-            ("dashscope", "DASHSCOPE_API_KEY", "qwen-plus"),
+            ("dashscope", "DASHSCOPE_API_KEY", "qwen3-max"),
             ("zhipu",     "ZHIPU_API_KEY",     "glm-4.6"),
-            ("kimi",      "KIMI_API_KEY",      "kimi-k2"),
+            ("kimi",      "KIMI_API_KEY",      "kimi-k2.5"),
             ("ernie",     "ERNIE_API_KEY",     "ernie-4.5"),
         ]:
             api_key = _read_env_key(env_key)

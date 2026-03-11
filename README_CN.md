@@ -204,14 +204,16 @@ IntelFlow 的核心概念是**维度**——AI 用来组织研究方向的独立
 
 | 厂商 | 推荐模型 | 原生搜索 | API 地址 | 获取 Key |
 |------|----------|----------|----------|----------|
-| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
-| **OpenAI** | gpt-4o / gpt-4o-search-preview / o3-mini | ✅ search model | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
-| **Google** | gemini-2.5-pro / gemini-2.5-flash | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
-| **智谱 AI** | glm-4.6 / glm-4-plus | ✅ web_search 插件 | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
-| **阿里通义** | qwen3-max / qwen-max / qwen-plus | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com/) |
-| **月之暗面** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
-| **百度文心** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
+| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5-20251001 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
+| **OpenAI** | gpt-5 / gpt-5-mini / o3 / o3-pro | ✅ MCP 原生 | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
+| **Google** | gemini-2.5-pro / gemini-2.5-flash / gemini-2.5-flash-lite | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
+| **智谱 AI** | glm-4.6 / glm-4.6v / glm-4.6v-flash | ✅ web_search 插件 | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
+| **阿里通义** | qwen3-max / qwen3.5-plus / qwen3-coder-next | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com/) |
+| **月之暗面** | kimi-k2.5 / kimi-k2-0905-preview | ✅ $web_search | `https://api.moonshot.ai/v1/chat/completions` | [platform.moonshot.ai](https://platform.moonshot.ai/) |
+| **百度文心** | ernie-5.0-thinking-preview / ernie-4.5 / ernie-x1.1-preview | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
 | **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ 本地无联网 | `http://localhost:11434/v1` | 本地运行，无需 Key |
+
+> GPT-4o 已于 2026年2月停用，OpenAI 低成本选项改用 `gpt-5-mini`。
 
 **每日参考成本**（生成一期日报，4-5个维度）：
 

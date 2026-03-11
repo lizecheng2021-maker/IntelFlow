@@ -236,65 +236,134 @@
     <!-- Publishing Platforms -->
     <div id="tab-platforms" class="tab-content">
         <h2>Publishing Platforms</h2>
-        <p>Configure where reports are automatically published.</p>
+        <p>Configure where reports are automatically published. Credentials are saved to <code>.env</code>.</p>
 
         <div class="platform-grid">
+
+            <!-- WordPress -->
             <div class="platform-card">
                 <h3>WordPress</h3>
                 <label class="toggle"><input type="checkbox" data-platform="wordpress" {{ 'checked' if platforms.get('wordpress', {}).get('enabled') }}> Enabled</label>
                 <div class="form-row">
                     <label>Site URL</label>
-                    <input type="text" id="key-WORDPRESS_URL"
+                    <input type="text" data-env-key="WORDPRESS_URL"
                            value="{{ env_vars.get('WORDPRESS_URL', '') }}"
                            placeholder="https://your-site.com">
                 </div>
                 <div class="form-row">
                     <label>Username</label>
-                    <input type="text" id="key-WORDPRESS_USER"
+                    <input type="text" data-env-key="WORDPRESS_USER"
                            value="{{ env_vars.get('WORDPRESS_USER', '') }}"
                            placeholder="admin">
                 </div>
                 <div class="form-row">
                     <label>App Password</label>
-                    <input type="password" id="key-WORDPRESS_APP_PASSWORD"
+                    <input type="password" data-env-key="WORDPRESS_APP_PASSWORD"
                            value="{{ env_vars.get('WORDPRESS_APP_PASSWORD', '') }}"
                            placeholder="xxxx xxxx xxxx xxxx">
                 </div>
                 <div class="form-row">
                     <label>Category</label>
-                    <input type="text" data-platform-opt="wordpress_category" value="{{ platforms.get('wordpress', {}).get('category', 'Daily Briefing') }}">
+                    <input type="text" data-platform-opt="wordpress_category"
+                           value="{{ platforms.get('wordpress', {}).get('category', 'Daily Briefing') }}">
                 </div>
+                <p class="hint">Generate App Password: WP Admin → Users → Profile → Application Passwords</p>
             </div>
+
+            <!-- Feishu / Lark -->
             <div class="platform-card">
-                <h3>Feishu / Lark</h3>
+                <h3>飞书 / Feishu</h3>
                 <label class="toggle"><input type="checkbox" data-platform="feishu" {{ 'checked' if platforms.get('feishu', {}).get('enabled') }}> Enabled</label>
                 <div class="form-row">
-                    <label>Webhook URL</label>
-                    <input type="password" id="key-FEISHU_WEBHOOK"
-                           value="{{ env_vars.get('FEISHU_WEBHOOK', '') }}"
-                           placeholder="https://open.feishu.cn/...">
+                    <label>App ID</label>
+                    <input type="text" data-env-key="FEISHU_APP_ID"
+                           value="{{ env_vars.get('FEISHU_APP_ID', '') }}"
+                           placeholder="cli_xxxxxx">
                 </div>
+                <div class="form-row">
+                    <label>App Secret</label>
+                    <input type="password" data-env-key="FEISHU_APP_SECRET"
+                           value="{{ env_vars.get('FEISHU_APP_SECRET', '') }}"
+                           placeholder="xxxxxxxxxxxxxxxx">
+                </div>
+                <div class="form-row">
+                    <label>Wiki Space ID <span class="hint">（飞书知识库 Space ID）</span></label>
+                    <input type="text" data-env-key="FEISHU_SPACE_ID"
+                           value="{{ env_vars.get('FEISHU_SPACE_ID', '') }}"
+                           placeholder="7xxxxxxxxxxxxx">
+                </div>
+                <p class="hint">飞书开放平台 → 创建企业自建应用 → 获取 App ID / Secret</p>
             </div>
+
+            <!-- WeChat Official Account -->
             <div class="platform-card">
-                <h3>Dev.to</h3>
-                <label class="toggle"><input type="checkbox" data-platform="devto" {{ 'checked' if platforms.get('devto', {}).get('enabled') }}> Enabled</label>
+                <h3>微信公众号</h3>
+                <label class="toggle"><input type="checkbox" data-platform="wechat" {{ 'checked' if platforms.get('wechat', {}).get('enabled') }}> Enabled</label>
+                <div class="form-row">
+                    <label>App ID</label>
+                    <input type="text" data-env-key="WECHAT_APP_ID"
+                           value="{{ env_vars.get('WECHAT_APP_ID', '') }}"
+                           placeholder="wx1234567890abcdef">
+                </div>
+                <div class="form-row">
+                    <label>App Secret</label>
+                    <input type="password" data-env-key="WECHAT_APP_SECRET"
+                           value="{{ env_vars.get('WECHAT_APP_SECRET', '') }}"
+                           placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                <div class="form-row">
+                    <label>Author</label>
+                    <input type="text" data-platform-opt="wechat_author"
+                           value="{{ platforms.get('wechat', {}).get('author', '') }}"
+                           placeholder="作者名">
+                </div>
+                <p class="hint">微信公众平台 → 设置与开发 → 基本配置 → 获取 AppID / AppSecret</p>
+            </div>
+
+            <!-- Twitter / X -->
+            <div class="platform-card">
+                <h3>Twitter / X</h3>
+                <label class="toggle"><input type="checkbox" data-platform="twitter" {{ 'checked' if platforms.get('twitter', {}).get('enabled') }}> Enabled</label>
                 <div class="form-row">
                     <label>API Key</label>
-                    <input type="password" data-platform-opt="devto_key" value="{{ platforms.get('devto', {}).get('api_key', '') }}" placeholder="dev.to API key">
+                    <input type="password" data-env-key="TWITTER_API_KEY"
+                           value="{{ env_vars.get('TWITTER_API_KEY', '') }}"
+                           placeholder="API Key (Consumer Key)">
                 </div>
+                <div class="form-row">
+                    <label>API Secret</label>
+                    <input type="password" data-env-key="TWITTER_API_SECRET"
+                           value="{{ env_vars.get('TWITTER_API_SECRET', '') }}"
+                           placeholder="API Key Secret">
+                </div>
+                <div class="form-row">
+                    <label>Access Token</label>
+                    <input type="password" data-env-key="TWITTER_ACCESS_TOKEN"
+                           value="{{ env_vars.get('TWITTER_ACCESS_TOKEN', '') }}"
+                           placeholder="Access Token">
+                </div>
+                <div class="form-row">
+                    <label>Access Secret</label>
+                    <input type="password" data-env-key="TWITTER_ACCESS_SECRET"
+                           value="{{ env_vars.get('TWITTER_ACCESS_SECRET', '') }}"
+                           placeholder="Access Token Secret">
+                </div>
+                <p class="hint">Posts the 30-second summary as a thread. Requires Twitter Developer App (Free tier OK).</p>
             </div>
+
+            <!-- LinkedIn -->
             <div class="platform-card">
-                <h3>Hashnode</h3>
-                <label class="toggle"><input type="checkbox" data-platform="hashnode" {{ 'checked' if platforms.get('hashnode', {}).get('enabled') }}> Enabled</label>
+                <h3>LinkedIn</h3>
+                <label class="toggle"><input type="checkbox" data-platform="linkedin" {{ 'checked' if platforms.get('linkedin', {}).get('enabled') }}> Enabled</label>
                 <div class="form-row">
-                    <label>API Key</label>
-                    <input type="password" data-platform-opt="hashnode_key" value="{{ platforms.get('hashnode', {}).get('api_key', '') }}" placeholder="Hashnode PAT">
+                    <label>Access Token</label>
+                    <input type="password" data-env-key="LINKEDIN_ACCESS_TOKEN"
+                           value="{{ env_vars.get('LINKEDIN_ACCESS_TOKEN', '') }}"
+                           placeholder="OAuth 2.0 Bearer token">
                 </div>
-                <div class="form-row">
-                    <label>Publication ID</label>
-                    <input type="text" data-platform-opt="hashnode_pub" value="{{ platforms.get('hashnode', {}).get('publication_id', '') }}">
-                </div>
+                <p class="hint">LinkedIn Developer Portal → Create App → OAuth 2.0 token (w_member_social scope)</p>
             </div>
+
         </div>
 
         <button class="btn btn-primary" onclick="savePlatforms()">Save Platforms</button>

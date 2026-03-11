@@ -225,8 +225,21 @@ async function savePlatforms() {
         if (!data[platform]) data[platform] = {};
         data[platform][key] = input.value;
     });
-    const result = await postJSON('/api/save-platforms', data);
-    showStatus('platforms-status', result.ok ? 'Saved!' : 'Error', result.ok);
+
+    // Also save env-key credentials (credentials stay in .env, not platforms.json)
+    const envData = {};
+    document.querySelectorAll('[data-env-key]').forEach(input => {
+        if (input.value && !input.value.includes('****')) {
+            envData[input.dataset.envKey] = input.value;
+        }
+    });
+
+    const promises = [postJSON('/api/save-platforms', data)];
+    if (Object.keys(envData).length) promises.push(postJSON('/api/save-env', envData));
+
+    const results = await Promise.all(promises);
+    const ok = results.every(r => r.ok);
+    showStatus('platforms-status', ok ? 'Saved!' : 'Error saving — check console', ok);
 }
 
 // Run pipeline
@@ -268,12 +281,12 @@ function pollStatus() {
 // AI Model config
 const MODEL_OPTIONS = {
     anthropic: ["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"],
-    openai: ["gpt-4o", "gpt-4o-search-preview", "gpt-4o-mini", "o3-mini"],
-    gemini: ["gemini-2.5-pro", "gemini-2.5-flash"],
-    zhipu: ["glm-4.6", "glm-4-plus", "glm-4"],
-    dashscope: ["qwen3-max", "qwen-max", "qwen-plus", "qwen-turbo"],
-    kimi: ["kimi-k2", "moonshot-v1-128k", "moonshot-v1-32k"],
-    ernie: ["ernie-4.5", "ernie-x1", "ernie-4.5-turbo-128k"],
+    openai: ["gpt-5", "gpt-5-mini", "o3", "o3-pro"],
+    gemini: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"],
+    zhipu: ["glm-4.6", "glm-4.6v", "glm-4.6v-flash"],
+    dashscope: ["qwen3-max", "qwen3.5-plus", "qwen3-coder-next", "qwen3-coder-plus"],
+    kimi: ["kimi-k2.5", "kimi-k2-0905-preview", "kimi-k2-0711-preview"],
+    ernie: ["ernie-5.0-thinking-preview", "ernie-4.5", "ernie-x1.1-preview", "ernie-x1-turbo"],
     ollama: ["llama3.3", "qwen2.5", "deepseek-r1", "mistral"]
 };
 

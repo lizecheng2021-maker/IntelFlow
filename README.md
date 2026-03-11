@@ -191,14 +191,16 @@ Beyond dimensions, you can configure:
 
 | Provider | Recommended Models | Web Search | API Endpoint | Get Key |
 |----------|--------------------|------------|--------------|---------|
-| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
-| **OpenAI** | gpt-4o / gpt-4o-search-preview / o3-mini | ✅ search model | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
-| **Google** | gemini-2.5-pro / gemini-2.5-flash | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
-| **Zhipu AI** | glm-4.6 / glm-4-plus | ✅ web_search plugin | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
-| **Alibaba** | qwen3-max / qwen-max / qwen-plus | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.aliyun.com](https://dashscope.console.aliyun.com/) |
-| **Moonshot** | kimi-k2 / moonshot-v1-128k | ✅ $web_search | `https://api.moonshot.cn/v1/chat/completions` | [platform.moonshot.cn](https://platform.moonshot.cn/) |
-| **Baidu ERNIE** | ernie-4.5 / ernie-x1 | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
+| **Anthropic** | claude-opus-4-6 / claude-sonnet-4-6 / claude-haiku-4-5-20251001 | ✅ tool use | `https://api.anthropic.com/v1/messages` | [console.anthropic.com](https://console.anthropic.com/) |
+| **OpenAI** | gpt-5 / gpt-5-mini / o3 / o3-pro | ✅ MCP native | `https://api.openai.com/v1/chat/completions` | [platform.openai.com](https://platform.openai.com/) |
+| **Google** | gemini-2.5-pro / gemini-2.5-flash / gemini-2.5-flash-lite | ✅ google_search | `https://generativelanguage.googleapis.com/v1beta` | [aistudio.google.com](https://aistudio.google.com/) |
+| **Zhipu AI** | glm-4.6 / glm-4.6v / glm-4.6v-flash | ✅ web_search plugin | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | [bigmodel.cn](https://open.bigmodel.cn/) |
+| **Alibaba** | qwen3-max / qwen3.5-plus / qwen3-coder-next | ✅ enable_search | `https://dashscope.aliyuncs.com/compatible-mode/v1` | [dashscope.aliyun.com](https://dashscope.console.aliyun.com/) |
+| **Moonshot** | kimi-k2.5 / kimi-k2-0905-preview | ✅ $web_search | `https://api.moonshot.ai/v1/chat/completions` | [platform.moonshot.ai](https://platform.moonshot.ai/) |
+| **Baidu ERNIE** | ernie-5.0-thinking-preview / ernie-4.5 / ernie-x1.1-preview | ✅ baidu_search | `https://aistudio.baidu.com/llm/lmapi/v3/chat/completions` | [aistudio.baidu.com](https://aistudio.baidu.com/) |
 | **Ollama** | llama3.3 / qwen2.5 / deepseek-r1 | ❌ local only | `http://localhost:11434/v1` | No key needed |
+
+> GPT-4o was discontinued February 2026. Use `gpt-5-mini` as cost-efficient OpenAI option.
 
 **Estimated daily cost** (one briefing, 4-5 dimensions):
 

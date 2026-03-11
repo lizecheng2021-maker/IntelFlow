@@ -410,7 +410,7 @@ class OllamaAdapter(LLMAdapter):
 # ---------------------------------------------------------------------------
 
 class KimiAdapter(LLMAdapter):
-    BASE_URL = "https://api.moonshot.cn/v1/chat/completions"
+    BASE_URL = "https://api.moonshot.ai/v1/chat/completions"
 
     @property
     def name(self) -> str:
