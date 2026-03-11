@@ -108,6 +108,107 @@ def view_report(date):
 
 # ─── API Endpoints ───────────────────────────────────────────
 
+@app.route("/api/ai-config")
+def get_ai_config():
+    """Get AI model configuration."""
+    return jsonify(_load_json(CONFIG_DIR / "ai.json", {}))
+
+
+@app.route("/api/save-ai", methods=["POST"])
+def save_ai():
+    """Save AI model configuration."""
+    try:
+        data = request.get_json()
+        _save_json(CONFIG_DIR / "ai.json", data)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+@app.route("/api/test-ai", methods=["POST"])
+def test_ai():
+    """Test AI model connection."""
+    try:
+        import urllib.request
+        data = request.get_json()
+        provider = data.get("provider", "anthropic")
+
+        if provider == "ollama":
+            base_url = data.get("base_url", "http://localhost:11434")
+            url = f"{base_url.rstrip('/')}/api/tags"
+            resp = urllib.request.urlopen(url, timeout=10)
+            return jsonify({"ok": resp.status == 200})
+
+        # Get API key: from request first, then .env, then env vars
+        api_key = data.get("api_key", "")
+        if not api_key or "****" in api_key:
+            env_key = _get_env_key(provider)
+            api_key = os.environ.get(env_key, "")
+            if not api_key:
+                env_path = ROOT / ".env"
+                if env_path.exists():
+                    for line in env_path.read_text().splitlines():
+                        line = line.strip()
+                        if line.startswith(f"{env_key}="):
+                            api_key = line.split("=", 1)[1]
+                            break
+        if not api_key:
+            return jsonify({"ok": False, "error": "Enter your API key first."})
+
+        # Test connectivity based on provider
+        if provider == "anthropic":
+            req = urllib.request.Request(
+                "https://api.anthropic.com/v1/messages",
+                data=json.dumps({"model": data.get("model", "claude-sonnet-4-20250514"), "max_tokens": 10, "messages": [{"role": "user", "content": "hi"}]}).encode(),
+                headers={"Content-Type": "application/json", "x-api-key": api_key, "anthropic-version": "2023-06-01"}
+            )
+            resp = urllib.request.urlopen(req, timeout=15)
+            return jsonify({"ok": resp.status == 200})
+        elif provider == "openai":
+            req = urllib.request.Request(
+                "https://api.openai.com/v1/models",
+                headers={"Authorization": f"Bearer {api_key}"}
+            )
+            resp = urllib.request.urlopen(req, timeout=10)
+            return jsonify({"ok": resp.status == 200})
+        elif provider == "gemini":
+            url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+            resp = urllib.request.urlopen(url, timeout=10)
+            return jsonify({"ok": resp.status == 200})
+        elif provider == "zhipu":
+            req = urllib.request.Request(
+                "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                data=json.dumps({"model": data.get("model", "glm-4"), "messages": [{"role": "user", "content": "hi"}], "max_tokens": 10}).encode(),
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+            )
+            resp = urllib.request.urlopen(req, timeout=15)
+            return jsonify({"ok": resp.status == 200})
+        elif provider == "dashscope":
+            req = urllib.request.Request(
+                "https://dashscope.aliyuncs.com/compatible-mode/v1/models",
+                headers={"Authorization": f"Bearer {api_key}"}
+            )
+            resp = urllib.request.urlopen(req, timeout=10)
+            return jsonify({"ok": resp.status == 200})
+        else:
+            return jsonify({"ok": False, "error": "Unknown provider"})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+def _get_env_key(provider):
+    """Map provider name to environment variable key."""
+    mapping = {
+        "anthropic": "ANTHROPIC_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "gemini": "GEMINI_API_KEY",
+        "zhipu": "ZHIPU_API_KEY",
+        "dashscope": "DASHSCOPE_API_KEY",
+        "ollama": "",
+    }
+    return mapping.get(provider, "")
+
+
 @app.route("/api/save-env", methods=["POST"])
 def save_env():
     """Save API keys to .env file."""
@@ -238,4 +339,5 @@ def pipeline_status():
 if __name__ == "__main__":
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5050))
+    app.run(host="0.0.0.0", port=port, debug=True)

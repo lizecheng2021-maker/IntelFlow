@@ -1,11 +1,20 @@
+# Core
 flask>=3.0
 requests>=2.31
 feedparser>=6.0
 python-dotenv>=1.0
-akshare>=1.12
-yfinance>=0.2
-youtube-transcript-api>=0.6
-cnlunar>=0.1
 beautifulsoup4>=4.12
 lxml>=5.0
 Pillow>=10.0
+
+# Data collectors (optional — install what you need)
+# akshare>=1.12          # Chinese A-share market data
+# yfinance>=0.2          # Global stock/index data
+# youtube-transcript-api>=0.6  # YouTube transcript extraction
+# cnlunar>=0.1           # Chinese lunar calendar
+
+# AI model SDKs (optional — pick your provider)
+# anthropic>=0.30        # Claude API
+# openai>=1.0            # GPT API (also works for any OpenAI-compatible endpoint)
+# zhipuai>=2.0           # Zhipu GLM API
+# google-genai>=0.5      # Google Gemini API

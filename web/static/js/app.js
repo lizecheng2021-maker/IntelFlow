@@ -265,7 +265,123 @@ function pollStatus() {
     }, 3000);
 }
 
+// AI Model config
+const MODEL_OPTIONS = {
+    anthropic: ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-haiku-4-20250414"],
+    openai: ["gpt-4o", "gpt-4o-mini", "o1"],
+    gemini: ["gemini-2.5-pro", "gemini-2.5-flash"],
+    zhipu: ["glm-4-plus", "glm-4"],
+    dashscope: ["qwen-max", "qwen-plus", "qwen-turbo"],
+    ollama: ["llama3", "mistral", "qwen2"]
+};
+
+function onProviderChange() {
+    const providerEl = document.getElementById('ai-provider');
+    if (!providerEl) return;
+    const provider = providerEl.value;
+    const modelSelect = document.getElementById('ai-model');
+    const ollamaRow = document.getElementById('ollama-url-row');
+
+    // Update model options
+    modelSelect.innerHTML = '';
+    (MODEL_OPTIONS[provider] || []).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        modelSelect.appendChild(opt);
+    });
+
+    // Show/hide Ollama URL, hide API key for Ollama
+    if (ollamaRow) ollamaRow.style.display = provider === 'ollama' ? '' : 'none';
+    const aiKeyRow = document.getElementById('ai-key-row');
+    if (aiKeyRow) aiKeyRow.style.display = provider === 'ollama' ? 'none' : '';
+
+    // Update API key placeholder per provider
+    const keyInput = document.getElementById('ai-api-key');
+    if (keyInput) {
+        const placeholders = {
+            anthropic: 'sk-ant-...', openai: 'sk-...', gemini: 'AIza...',
+            zhipu: 'Your Zhipu API key', dashscope: 'sk-...'
+        };
+        keyInput.placeholder = placeholders[provider] || 'Paste your API key here';
+    }
+}
+
+async function saveAiConfig() {
+    const provider = document.getElementById('ai-provider')?.value || 'anthropic';
+    const apiKey = document.getElementById('ai-api-key')?.value || '';
+    const data = {
+        llm: {
+            provider,
+            model: document.getElementById('ai-model')?.value || '',
+            temperature: parseFloat(document.getElementById('ai-temperature')?.value || '0.7'),
+            max_tokens: 4096
+        },
+        search: {
+            provider: document.getElementById('search-provider')?.value || ''
+        }
+    };
+    if (provider === 'ollama') {
+        data.llm.base_url = document.getElementById('ollama-url')?.value || 'http://localhost:11434';
+    }
+    // Save API key to .env via the save-env endpoint
+    if (apiKey && !apiKey.includes('****')) {
+        const envKeyMap = {
+            anthropic: 'ANTHROPIC_API_KEY', openai: 'OPENAI_API_KEY', gemini: 'GEMINI_API_KEY',
+            zhipu: 'ZHIPU_API_KEY', dashscope: 'DASHSCOPE_API_KEY'
+        };
+        const envKey = envKeyMap[provider];
+        if (envKey) await postJSON('/api/save-env', { [envKey]: apiKey });
+    }
+    const result = await postJSON('/api/save-ai', data);
+    showStatus('ai-status', result.ok ? 'Saved!' : 'Error: ' + result.error, result.ok);
+}
+
+async function testAiModel() {
+    const btn = event.target;
+    btn.textContent = 'Testing...';
+    btn.disabled = true;
+    const data = {
+        provider: document.getElementById('ai-provider')?.value,
+        model: document.getElementById('ai-model')?.value,
+        temperature: parseFloat(document.getElementById('ai-temperature')?.value || '0.7'),
+        api_key: document.getElementById('ai-api-key')?.value || ''
+    };
+    if (data.provider === 'ollama') {
+        data.base_url = document.getElementById('ollama-url')?.value;
+    }
+    const result = await postJSON('/api/test-ai', data);
+    showStatus('ai-test-status', result.ok ? 'Connected!' : 'Failed: ' + (result.error || 'Check API key'), result.ok);
+    btn.textContent = 'Test Connection';
+    btn.disabled = false;
+}
+
+// Load AI config on page load
+async function loadAiConfig() {
+    try {
+        const resp = await fetch('/api/ai-config');
+        const data = await resp.json();
+        if (data.llm) {
+            const providerEl = document.getElementById('ai-provider');
+            if (providerEl) { providerEl.value = data.llm.provider || 'anthropic'; onProviderChange(); }
+            const modelEl = document.getElementById('ai-model');
+            if (modelEl && data.llm.model) modelEl.value = data.llm.model;
+            const tempEl = document.getElementById('ai-temperature');
+            if (tempEl && data.llm.temperature != null) {
+                tempEl.value = data.llm.temperature;
+                document.getElementById('temp-val').textContent = data.llm.temperature;
+            }
+        }
+        if (data.search) {
+            const searchEl = document.getElementById('search-provider');
+            if (searchEl) searchEl.value = data.search.provider || '';
+        }
+    } catch(e) {}
+}
+
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     recalcTotal();
+    onProviderChange();
+    loadAiConfig();
 });

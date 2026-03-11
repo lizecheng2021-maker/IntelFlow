@@ -23,7 +23,7 @@ pip install -r requirements.txt
 python web/app.py
 ```
 
-Open `http://localhost:5000/setup` in your browser. Configure everything through the web interface:
+Open `http://localhost:5050/setup` in your browser. Configure everything through the web interface:
 
 1. **API Keys** — Enter your API keys (see below for free options)
 2. **Data Sources** — Toggle which sources to collect from

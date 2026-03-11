@@ -51,7 +51,7 @@ API keys go in `.env` (gitignored). Start from `.env.example`.
 ## Development Notes
 
 - Python 3.11+ required
-- Flask for web UI (port 5000)
+- Flask for web UI (port 5050)
 - All scripts use `ROOT = Path(__file__).resolve().parent.parent` pattern
 - Config loaded via `utils.load_config()` helper
 - No personal information should ever be committed

@@ -2,109 +2,86 @@
 {% block title %}IntelFlow — Setup{% endblock %}
 {% block content %}
 <div class="setup-wizard">
-    <h1>Configuration</h1>
-    <p>Set up your API keys, data sources, focus areas, and publishing platforms.</p>
+    <h1>Get Started</h1>
+    <p>Fill in your AI model key, tell IntelFlow what you care about, and it will automatically discover and track relevant information sources for you.</p>
 
     <div class="tabs">
-        <button class="tab active" data-tab="keys">API Keys</button>
+        <button class="tab active" data-tab="ai">AI Model</button>
         <button class="tab" data-tab="sources">Data Sources</button>
         <button class="tab" data-tab="focus">Focus Areas</button>
         <button class="tab" data-tab="profile">Editorial Voice</button>
         <button class="tab" data-tab="platforms">Publishing</button>
     </div>
 
-    <!-- API Keys -->
-    <div id="tab-keys" class="tab-content active">
-        <h2>API Keys</h2>
-        <p>Configure your API keys. Free tiers are sufficient for daily use.</p>
+    <!-- AI Model (first tab — only thing required to get started) -->
+    <div id="tab-ai" class="tab-content active">
+        <h2>AI Model</h2>
 
-        <div class="key-group">
-            <h3>AI Models (Required — pick at least one)</h3>
+        <!-- AI Model Selection -->
+        <div class="form-section">
+            <h3>LLM Provider</h3>
+            <p class="hint">Pick your AI model. This is all you need — the AI will use web search to discover information sources automatically.</p>
+
             <div class="form-row">
-                <label>ANTHROPIC_API_KEY</label>
-                <input type="password" id="key-ANTHROPIC_API_KEY"
+                <label>Provider</label>
+                <select id="ai-provider" onchange="onProviderChange()">
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="gemini">Google (Gemini)</option>
+                    <option value="zhipu">智谱 (GLM)</option>
+                    <option value="dashscope">阿里通义 (Qwen)</option>
+                    <option value="ollama">Ollama (Local)</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Model</label>
+                <select id="ai-model">
+                    <!-- Dynamically populated -->
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Temperature <span id="temp-val">0.7</span></label>
+                <input type="range" id="ai-temperature" min="0" max="1" step="0.1" value="0.7"
+                       oninput="document.getElementById('temp-val').textContent = this.value">
+            </div>
+
+            <div class="form-row" id="ai-key-row">
+                <label>API Key</label>
+                <input type="password" id="ai-api-key"
                        value="{{ env_vars.get('ANTHROPIC_API_KEY', '') }}"
-                       placeholder="sk-ant-...">
-                <button class="btn btn-sm" onclick="testKey('anthropic')">Test</button>
-                <span class="key-hint">Claude API — report generation engine</span>
+                       placeholder="Paste your API key here">
+                <span class="key-hint">This is the only key you need to get started.</span>
             </div>
+
+            <div class="form-row" id="ollama-url-row" style="display:none">
+                <label>Ollama URL</label>
+                <input type="text" id="ollama-url" value="http://localhost:11434" placeholder="http://localhost:11434">
+            </div>
+
+            <button class="btn" onclick="testAiModel()">Test Connection</button>
+            <span id="ai-test-status" class="status-msg"></span>
+        </div>
+
+        <div class="form-section">
+            <h3>Web Search Provider</h3>
+            <p class="hint">Optional. Helps the AI discover and verify information.</p>
+
             <div class="form-row">
-                <label>GEMINI_API_KEY</label>
-                <input type="password" id="key-GEMINI_API_KEY"
-                       value="{{ env_vars.get('GEMINI_API_KEY', '') }}"
-                       placeholder="AIza...">
-                <button class="btn btn-sm" onclick="testKey('gemini')">Test</button>
-                <span class="key-hint">Google Gemini — cover image generation (free tier available)</span>
+                <label>Search Provider</label>
+                <select id="search-provider">
+                    <option value="">None (skip web search)</option>
+                    <option value="tavily">Tavily</option>
+                    <option value="serpapi">SerpAPI</option>
+                    <option value="bing">Bing Search</option>
+                    <option value="google_cse">Google Custom Search</option>
+                </select>
             </div>
         </div>
 
-        <div class="key-group">
-            <h3>Data Sources (Optional — enhances coverage)</h3>
-            <div class="form-row">
-                <label>GNEWS_API_KEY</label>
-                <input type="password" id="key-GNEWS_API_KEY"
-                       value="{{ env_vars.get('GNEWS_API_KEY', '') }}"
-                       placeholder="...">
-                <button class="btn btn-sm" onclick="testKey('gnews')">Test</button>
-                <span class="key-hint">GNews.io — 100 free requests/day</span>
-            </div>
-            <div class="form-row">
-                <label>TAVILY_API_KEY</label>
-                <input type="password" id="key-TAVILY_API_KEY"
-                       value="{{ env_vars.get('TAVILY_API_KEY', '') }}"
-                       placeholder="tvly-...">
-                <button class="btn btn-sm" onclick="testKey('tavily')">Test</button>
-                <span class="key-hint">Tavily — AI search, 1000 free/month</span>
-            </div>
-            <div class="form-row">
-                <label>SERPAPI_API_KEY</label>
-                <input type="password" id="key-SERPAPI_API_KEY"
-                       value="{{ env_vars.get('SERPAPI_API_KEY', '') }}"
-                       placeholder="...">
-                <span class="key-hint">SerpAPI — Google search fallback, 100 free/month</span>
-            </div>
-            <div class="form-row">
-                <label>FMP_API_KEY</label>
-                <input type="password" id="key-FMP_API_KEY"
-                       value="{{ env_vars.get('FMP_API_KEY', '') }}"
-                       placeholder="...">
-                <span class="key-hint">Financial Modeling Prep — US stock data, 250 free/day</span>
-            </div>
-        </div>
-
-        <div class="key-group">
-            <h3>Publishing Platforms (Optional)</h3>
-            <div class="form-row">
-                <label>WORDPRESS_URL</label>
-                <input type="text" id="key-WORDPRESS_URL"
-                       value="{{ env_vars.get('WORDPRESS_URL', '') }}"
-                       placeholder="https://your-site.com">
-                <span class="key-hint">WordPress site URL</span>
-            </div>
-            <div class="form-row">
-                <label>WORDPRESS_USER</label>
-                <input type="text" id="key-WORDPRESS_USER"
-                       value="{{ env_vars.get('WORDPRESS_USER', '') }}"
-                       placeholder="admin">
-            </div>
-            <div class="form-row">
-                <label>WORDPRESS_APP_PASSWORD</label>
-                <input type="password" id="key-WORDPRESS_APP_PASSWORD"
-                       value="{{ env_vars.get('WORDPRESS_APP_PASSWORD', '') }}"
-                       placeholder="xxxx xxxx xxxx xxxx">
-                <span class="key-hint">WordPress Application Password (not login password)</span>
-            </div>
-            <div class="form-row">
-                <label>FEISHU_WEBHOOK</label>
-                <input type="password" id="key-FEISHU_WEBHOOK"
-                       value="{{ env_vars.get('FEISHU_WEBHOOK', '') }}"
-                       placeholder="https://open.feishu.cn/...">
-                <span class="key-hint">Feishu/Lark webhook URL</span>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveEnvKeys()">Save API Keys</button>
-        <div id="keys-status" class="status-msg"></div>
+        <button class="btn btn-primary" onclick="saveAiConfig()">Save AI Configuration</button>
+        <span id="ai-status" class="status-msg"></span>
     </div>
 
     <!-- Data Sources -->
@@ -263,7 +240,24 @@
             <div class="platform-card">
                 <h3>WordPress</h3>
                 <label class="toggle"><input type="checkbox" data-platform="wordpress" {{ 'checked' if platforms.get('wordpress', {}).get('enabled') }}> Enabled</label>
-                <p class="hint">Requires WORDPRESS_URL, WORDPRESS_USER, WORDPRESS_APP_PASSWORD in API Keys tab.</p>
+                <div class="form-row">
+                    <label>Site URL</label>
+                    <input type="text" id="key-WORDPRESS_URL"
+                           value="{{ env_vars.get('WORDPRESS_URL', '') }}"
+                           placeholder="https://your-site.com">
+                </div>
+                <div class="form-row">
+                    <label>Username</label>
+                    <input type="text" id="key-WORDPRESS_USER"
+                           value="{{ env_vars.get('WORDPRESS_USER', '') }}"
+                           placeholder="admin">
+                </div>
+                <div class="form-row">
+                    <label>App Password</label>
+                    <input type="password" id="key-WORDPRESS_APP_PASSWORD"
+                           value="{{ env_vars.get('WORDPRESS_APP_PASSWORD', '') }}"
+                           placeholder="xxxx xxxx xxxx xxxx">
+                </div>
                 <div class="form-row">
                     <label>Category</label>
                     <input type="text" data-platform-opt="wordpress_category" value="{{ platforms.get('wordpress', {}).get('category', 'Daily Briefing') }}">
@@ -272,7 +266,12 @@
             <div class="platform-card">
                 <h3>Feishu / Lark</h3>
                 <label class="toggle"><input type="checkbox" data-platform="feishu" {{ 'checked' if platforms.get('feishu', {}).get('enabled') }}> Enabled</label>
-                <p class="hint">Requires FEISHU_WEBHOOK in API Keys tab.</p>
+                <div class="form-row">
+                    <label>Webhook URL</label>
+                    <input type="password" id="key-FEISHU_WEBHOOK"
+                           value="{{ env_vars.get('FEISHU_WEBHOOK', '') }}"
+                           placeholder="https://open.feishu.cn/...">
+                </div>
             </div>
             <div class="platform-card">
                 <h3>Dev.to</h3>

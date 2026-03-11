@@ -1,0 +1,21 @@
+{
+  "_comment": "AI model and search provider configuration. Pick your preferred provider.",
+  "llm": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.7,
+    "max_tokens": 4096
+  },
+  "search": {
+    "provider": "tavily",
+    "max_results": 10
+  },
+  "providers": {
+    "anthropic": {"env_key": "ANTHROPIC_API_KEY", "models": ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-haiku-4-20250414"]},
+    "openai": {"env_key": "OPENAI_API_KEY", "models": ["gpt-4o", "gpt-4o-mini", "o1"]},
+    "gemini": {"env_key": "GEMINI_API_KEY", "models": ["gemini-2.5-pro", "gemini-2.5-flash"]},
+    "zhipu": {"env_key": "ZHIPU_API_KEY", "models": ["glm-4-plus", "glm-4"]},
+    "dashscope": {"env_key": "DASHSCOPE_API_KEY", "models": ["qwen-max", "qwen-plus", "qwen-turbo"]},
+    "ollama": {"env_key": null, "base_url": "http://localhost:11434", "models": ["llama3", "mistral", "qwen2"]}
+  }
+}

@@ -137,6 +137,50 @@ def get_rss_feeds(category: str | None = None) -> list[str]:
     return all_feeds
 
 
+def load_ai_config() -> dict:
+    """Load config/ai.json with API keys resolved from environment.
+
+    Returns dict with 'llm' and 'search' sections, e.g.:
+      {"llm": {"provider": "anthropic", "model": "...", "api_key": "sk-..."}, "search": {...}}
+    """
+    raw = load_config("ai.json")
+    if not raw:
+        return {"llm": {"provider": "anthropic", "model": "claude-sonnet-4-20250514", "temperature": 0.7, "max_tokens": 4096}, "search": {}}
+
+    # Resolve API key from environment
+    llm = raw.get("llm", {})
+    providers = raw.get("providers", {})
+    provider_name = llm.get("provider", "anthropic")
+    provider_info = providers.get(provider_name, {})
+    env_key = provider_info.get("env_key")
+    if env_key:
+        llm["api_key"] = os.environ.get(env_key, _load_env().get(env_key, ""))
+    if provider_name == "ollama":
+        llm.setdefault("base_url", provider_info.get("base_url", "http://localhost:11434"))
+
+    # Resolve search API key
+    search = raw.get("search", {})
+    search_provider = search.get("provider", "")
+    search_env_map = {"tavily": "TAVILY_API_KEY", "serpapi": "SERPAPI_API_KEY", "bing": "BING_API_KEY", "google_cse": "GOOGLE_CSE_KEY"}
+    if search_provider in search_env_map:
+        skey = search_env_map[search_provider]
+        search["api_key"] = os.environ.get(skey, _load_env().get(skey, ""))
+
+    return {"llm": llm, "search": search, "providers": providers}
+
+
+def load_focus_config() -> dict:
+    """Load config/focus.json and return dimension definitions.
+
+    Returns dict with 'dimensions' key, each dimension has:
+      {"enabled": bool, "weight": int, "label": str, "description": str}
+    """
+    raw = load_config("focus.json")
+    if not raw:
+        return {"dimensions": {}}
+    return raw
+
+
 def load_platforms() -> dict:
     """Load config/platforms.json with ${VAR} placeholders resolved from .env."""
     raw = load_json(CONFIG_DIR / "platforms.json")

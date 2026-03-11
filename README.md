@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">IntelFlow</h1>
-  <p align="center"><strong>Build Your Own AI-Powered Daily Intelligence System</strong></p>
-  <p align="center">An open-source framework for creating personalized, multi-source intelligence briefings.<br/>Define your dimensions. Plug in your sources. Own your information flow.</p>
+  <p align="center"><strong>One API Key. Tell the AI What You Care About. Get Your Daily Briefing.</strong></p>
+  <p align="center">Open-source framework that uses AI + Web Search to automatically discover, analyze, and deliver intelligence on any topic you define.</p>
 </p>
 
 <p align="center">
@@ -11,48 +11,18 @@
   <a href="https://www.lizecheng.net"><img src="https://img.shields.io/badge/live%20demo-lizecheng.net-orange.svg" alt="Live Demo"></a>
 </p>
 
+**[English](README.md)** | [中文](README_CN.md)
+
 ---
 
-## What Is This?
+## How It Works
 
-IntelFlow is an **open-source framework** for building your own AI-powered daily intelligence system. It provides the engine — you decide what to track, which sources to pull from, how deep to analyze, and where to publish.
+1. **Plug in an AI model** — Claude, GPT, Gemini, Zhipu GLM, Qwen, or a local Ollama model
+2. **Tell it what you care about** — Define your focus dimensions through the Web UI (e.g., "AI 30%, Crypto 25%, SaaS 20%...")
+3. **AI discovers the sources** — The engine uses web search and built-in collectors to automatically find relevant information
+4. **Get your daily briefing** — Multi-dimensional analysis report, generated and published automatically
 
-Most AI newsletter tools are hardcoded: fixed sources, fixed topics, generic summaries. IntelFlow gives you the **underlying architecture** so you can build an intelligence system tailored to your world — whether you're tracking crypto markets, biotech research, SaaS competitors, local politics, or anything else.
-
-The framework handles the hard parts: parallel data collection, intelligent deduplication, section-based AI analysis, report assembly, and multi-platform publishing. You just configure what matters to you.
-
-**Built by the author using IntelFlow:** [www.lizecheng.net](https://www.lizecheng.net)
-
-## At a Glance
-
-| Metric | Value |
-|--------|-------|
-| Data Source Types | RSS, APIs, web scraping, YouTube transcripts, Reddit, search engines |
-| Analysis Dimensions | Fully customizable (default template includes 7 dimensions) |
-| End-to-End Runtime | ~25 minutes |
-| Daily API Cost | ~$2-3 |
-| Output | Bilingual reports, AI cover images, auto-published to multiple platforms |
-| Hardware | Runs on a single laptop |
-
-## Why IntelFlow?
-
-**1. You Define the Dimensions**
-IntelFlow doesn't decide what's important — you do. Through the web UI, define your own analysis dimensions with custom weights. A VC might track: Deal Flow 30%, Market Signals 25%, Portfolio News 20%, Regulatory 15%, Talent 10%. A game developer might track: Industry News 30%, Tech Releases 25%, Community Sentiment 20%, Competitor Moves 15%, Platform Changes 10%. The framework adapts to any domain.
-
-**2. Plug-In Data Architecture**
-Data collectors are modular scripts. The framework ships with collectors for common sources (RSS, news APIs, Hacker News, GitHub, Reddit, YouTube, finance APIs). Adding your own is straightforward — write a Python script that outputs JSON, drop it in `scripts/`, and it joins the pipeline.
-
-**3. Thinking-Model Analysis, Not Summarization**
-The AI doesn't just summarize — it analyzes. Cross-references signals across dimensions, identifies structural shifts, and outputs independent judgment. You configure the analytical depth and editorial voice.
-
-**4. Section-Based Parallel Generation**
-Data is split by dimension. Each section is generated independently and in parallel, then assembled. If one section fails, it retries alone without blocking others. Fast and resilient.
-
-**5. 3-Layer Deduplication Engine**
-Multiple sources inevitably overlap. IntelFlow deduplicates at collection, preprocessing, and generation stages — every paragraph carries unique information.
-
-**6. Configurable Editorial Voice**
-Define the analytical persona through the web UI — tone, catchphrases, analysis style. Your daily briefing sounds like *you*, not generic AI output.
+No fixed data sources. No hardcoded topics. The AI finds what matters based on *your* dimensions.
 
 ## Quick Start
 
@@ -61,61 +31,47 @@ Define the analytical persona through the web UI — tone, catchphrases, analysi
 git clone https://github.com/lizecheng2021-maker/IntelFlow.git
 cd IntelFlow
 
-# 2. Install dependencies
+# 2. Install
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Configure via Web UI
+# 3. Open the Web UI and paste your AI API key
 python web/app.py
-# Open http://localhost:5000 in your browser
-# Set up API keys, data sources, focus areas, and schedule
+# Open http://localhost:5050 → paste ONE API key → define your focus areas → done
 
 # 4. Run your first briefing
 bash scripts/run_daily.sh
 ```
 
-### Required API Keys
+**That's it.** One API key is all you need to get started. Everything else is optional.
 
-| Service | Purpose | Free Tier |
-|---------|---------|-----------|
-| Claude (Anthropic) | Analysis & writing | Pay-per-use |
-| Gemini (Google) | Cover image generation | Free tier available |
-| GNews | International news | 100 req/day free |
-| FMP | US stock data | 250 req/day free |
-| SerpAPI | Search fallback | 250 req/month free |
+## Supported AI Models
 
-Most data sources (Hacker News, GitHub Trending, AKShare, RSS feeds, Reddit, YouTube transcripts) require **no API key**.
+| Provider | Models | Notes |
+|----------|--------|-------|
+| Anthropic | Claude Sonnet / Opus / Haiku | Best analytical depth |
+| OpenAI | GPT-4o / GPT-4o-mini / o1 | Widely available |
+| Google | Gemini 2.5 Pro / Flash | Free tier available |
+| 智谱 AI | GLM-4-Plus / GLM-4 | Best for Chinese content |
+| 阿里通义 | Qwen-Max / Plus / Turbo | OpenAI-compatible API |
+| Ollama | Llama 3 / Mistral / Qwen2 | 100% local, no API key needed |
 
-## Web UI
+Switch models anytime in the Web UI. No code changes needed.
 
-IntelFlow includes a Flask-based configuration panel at `http://localhost:5000`:
+## At a Glance
 
-- **Dashboard** — View recent reports, system health, generation status
-- **API Keys** — Securely configure all service credentials
-- **Data Sources** — Enable/disable individual sources, set collection parameters
-- **Focus Areas** — Adjust dimension weights (e.g., 30% AI, 20% startups, 10% SEO)
-- **Editorial Profile** — Define writing tone, analytical depth, persona traits
-- **Platform Publishing** — Configure auto-publish to WordPress, Feishu, WeChat, Dev.to, LinkedIn
-- **Schedule** — Set daily run time, enable/disable weekend deep-dives
+| Metric | Value |
+|--------|-------|
+| Setup Time | ~5 minutes (paste API key + define dimensions) |
+| End-to-End Runtime | ~25 minutes per briefing |
+| Daily Cost | ~$2-3 (depends on your AI model) |
+| Output | Multi-dimensional analysis reports, optional AI cover images |
+| Hardware | Runs on a single laptop |
 
-## Dimension Framework (Fully Customizable)
+## Define Your Dimensions
 
-IntelFlow's core concept is **dimensions** — independent analysis tracks, each with its own data sources and weight. You define what matters to you.
-
-### Default Template (7 dimensions)
-
-| Dimension | Default Weight | Description |
-|-----------|---------------|-------------|
-| AI & Technology | 25% | Model releases, tool launches, research breakthroughs |
-| Finance & Markets | 15% | Capital flows, earnings, market structure changes |
-| SEO & Search | 15% | Algorithm updates, traffic pattern shifts |
-| Startups & Business | 15% | New launches, funding rounds, business model innovations |
-| E-commerce | 10% | Platform changes, conversion tactics, marketplace trends |
-| Creator Economy | 10% | Audience building, content strategy, monetization |
-| Macro & Policy | 10% | Regulatory shifts, geopolitical signals |
-
-### Example: Customize for Your Domain
+IntelFlow's core concept is **dimensions** — independent analysis tracks the AI uses to organize its research. You define what matters to you through the Web UI.
 
 **Crypto Trader:**
 - Market Signals 30% | On-chain Data 25% | Regulatory 20% | DeFi Protocols 15% | Macro 10%
@@ -126,7 +82,22 @@ IntelFlow's core concept is **dimensions** — independent analysis tracks, each
 **Academic Researcher:**
 - Paper Releases 30% | Grant Funding 20% | Conference News 20% | Industry Applications 15% | Policy Impact 15%
 
-Add/remove/rename dimensions through the web UI or `config/focus.json`. Each dimension maps to data sources you configure.
+**Game Developer:**
+- Industry News 30% | Tech Releases 25% | Community Sentiment 20% | Competitor Moves 15% | Platform Changes 10%
+
+The AI uses these dimensions to guide its web search, prioritize information, and structure the final report.
+
+## What Makes IntelFlow Different
+
+**AI-Driven Discovery** — You don't manually curate sources. The AI uses web search to find relevant information for each of your dimensions. It discovers what's happening, not just what you already know to look for.
+
+**Thinking-Model Analysis** — The AI doesn't just summarize. It cross-references signals across dimensions, identifies structural shifts, and outputs independent judgment. You configure the analytical depth and editorial voice.
+
+**Section-Based Parallel Generation** — Each dimension is analyzed independently and in parallel. If one section fails, it retries without blocking others.
+
+**Configurable Editorial Voice** — Define the persona through the Web UI — tone, catchphrases, analysis style. Your briefing sounds like *you*, not generic AI output.
+
+**Multi-Platform Publishing** — Auto-publish to WordPress, Feishu, Dev.to, Hashnode. Or just read the markdown files locally.
 
 ## Architecture
 
@@ -136,77 +107,61 @@ Add/remove/rename dimensions through the web UI or `config/focus.json`. Each dim
 
  COLLECT (parallel)          PROCESS             GENERATE (parallel)      PUBLISH
  ______________________     ___________         ____________________     ________
-| collect_news.py      |   |           |       |                    |   |        |
-| collect_finance.py   |   |  prepare  |       |  Section 1: AI     |   | Feishu |
-| collect_ai.py        |-->|  briefing |--+--->|  Section 2: Builder|-->| WP     |
-| collect_business.py  |   |   .py     |  |   |  Section 3: Biz    |   | WeChat |
-| collect_youtube.py   |   |___________|  |   |  Section 4: SEO    |   | Dev.to |
-| collect_tavily.py    |        |         |   |  Section 5: Finance|   | LI     |
-| search_supplement.py |        v         |   |  Section 6: Macro  |   |________|
-| collect_lunar.py     |   WebSearch      |   |____________________|
-|______________________|   verification   |            |
-                            (Claude)      |            v
-                                          |     assemble_report.py
-                                          |            |
-                                          |            v
-                                          |     AI Cover Images
-                                          |     (Gemini + style ref)
-                                          |            |
+| Web Search           |   |           |       |                    |   |        |
+| RSS Feeds            |   |  prepare  |       |  Section 1         |   | WP     |
+| Hacker News          |-->|  briefing |--+--->|  Section 2         |-->| Feishu |
+| GitHub Trending      |   |   .py     |  |   |  Section 3         |   | Dev.to |
+| Reddit               |   |___________|  |   |  Section N         |   |________|
+| YouTube Transcripts  |        |         |   |____________________|
+| Custom Collectors    |        v         |            |
+|______________________|   AI WebSearch   |            v
+                          verification    |     assemble_report.py
                                           +------------+
 ```
 
 **Key design decisions:**
-- Each collector has a 10-minute timeout — one slow API never blocks the pipeline
-- Section-based generation means each dimension reads only its own data slice
+- Each collector has a 10-minute timeout — one slow source never blocks the pipeline
+- The AI model is pluggable — switch providers without changing any pipeline code
 - Failed sections auto-retry once without affecting other sections
-- YouTube transcript API has 3-layer fallback: direct API, WebSearch supplement, section-level search
+- Built-in collectors (RSS, HN, GitHub, Reddit, YouTube) work with no API keys
 
-## 3-Layer Deduplication Engine
+## Extend with Custom Collectors
 
-| Layer | Stage | Method |
-|-------|-------|--------|
-| 1 | Collection | URL + title dedup across all sources |
-| 2 | Preprocessing | Semantic similarity clustering, merge related items |
-| 3 | Generation | Cross-section reference check, eliminate redundant analysis |
+Want to add your own data source? Write a Python script that outputs JSON:
 
-## Monthly Cost Estimate
+```bash
+# 1. Create scripts/collect_mydata.py
+#    - Accept --date and --output args
+#    - Save output as raw_mydata.json
 
-| Component | Cost |
-|-----------|------|
-| Claude API (analysis + writing) | ~$60-75/month |
-| Gemini API (cover images) | ~$8/month |
-| GNews, FMP, SerpAPI | Free tier |
-| All other sources | Free (RSS, public APIs) |
-| **Total** | **~$70-85/month** |
-
-Runs entirely on your local machine. No server costs.
+# 2. That's it — the pipeline auto-discovers collect_*.py scripts
+```
 
 ## Output Formats
 
-- **Daily Briefing** — 4,000-5,000 words, bilingual (EN + CN), with AI-generated cover images
+- **Daily Briefing** — 4,000-5,000 words, with AI-generated cover images
 - **Weekly Deep-Dive** — 8,000-10,000 words, aggregated cross-dimensional analysis
-- **Monthly Review** — 12,000-15,000 words, trend synthesis with 30-day financial data
-
-## Contributing
-
-IntelFlow is in active development. Contributions welcome in these areas:
-
-- **New data source collectors** — Add support for more RSS feeds, APIs, or platforms
-- **Analysis improvements** — Better deduplication, smarter section splitting
-- **Publishing integrations** — New platform adapters (Substack, Medium, Ghost, etc.)
-- **Web UI enhancements** — Better dashboard, real-time progress tracking
-- **Documentation** — Tutorials, setup guides, configuration examples
-
-Please open an issue first to discuss significant changes.
+- **Monthly Review** — 12,000-15,000 words, trend synthesis
 
 ## Author's Output
 
-The author uses IntelFlow daily to track AI, SEO, finance, and startups. Published output:
+The author uses IntelFlow daily. Published output:
 
-- **English reports:** [www.lizecheng.net](https://www.lizecheng.net)
-- **Chinese reports (Feishu):** [feishu.cn/wiki](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e?fromScene=spaceOverview)
+- **English:** [www.lizecheng.net](https://www.lizecheng.net)
+- **Chinese (Feishu):** [feishu.cn/wiki](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e?fromScene=spaceOverview)
 
-Your setup will look completely different based on your dimensions and sources.
+Your setup will look completely different — it depends on your dimensions and your AI model.
+
+## Contributing
+
+Contributions welcome:
+
+- **New data collectors** — More RSS feeds, APIs, or platform adapters
+- **AI model adapters** — Add support for more LLM providers
+- **Publishing integrations** — Substack, Medium, Ghost, LinkedIn, etc.
+- **Web UI improvements** — Better setup flow, real-time progress
+
+Please open an issue first to discuss significant changes.
 
 ## License
 

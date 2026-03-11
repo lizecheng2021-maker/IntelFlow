@@ -205,81 +205,28 @@ log "Split into $SECTION_COUNT dimension files"
 # Step 4: Section-based Report Generation
 # ============================================
 
-log "=== Step 4: Report Generation ==="
+log "=== Step 4: Report Generation (model-agnostic) ==="
 
-# Check if Claude Code CLI is available
-if ! command -v claude &>/dev/null; then
-    err "Claude Code CLI not found. Install: https://docs.anthropic.com/en/docs/claude-code"
-    err "Skipping report generation."
-else
-    # Load focus config for enabled dimensions
-    FOCUS_FILE="$CONFIG_DIR/focus.json"
-    PROFILE_FILE="$CONFIG_DIR/profile.json"
+# Generate sections using configured LLM (supports Claude, GPT, Gemini, Zhipu, Qwen, Ollama)
+run_with_timeout 1200 "Generate sections" \
+    $PYTHON "$SCRIPT_DIR/generate_sections.py" --date "$TODAY" --output "$OUTPUT_DIR" --type daily
 
-    # Generate each section in parallel
-    SECTION_PIDS=()
-    SECTION_LABELS=()
+# Assemble final report
+log "Assembling final report..."
+run_with_timeout 300 "Assemble report" \
+    $PYTHON "$SCRIPT_DIR/assemble_report.py" --date "$TODAY" --output "$OUTPUT_DIR" --type daily
 
-    for section_file in "$SECTIONS_DIR"/*.json; do
-        [ -f "$section_file" ] || continue
-        section_name=$(basename "$section_file" .json)
-        output_md="$SECTIONS_DIR/${section_name}.md"
-
-        log "Generating section: $section_name"
-
-        # Build the prompt for this section
-        claude -p "You are an intelligence analyst. Analyze the following data and write a detailed analysis section.
-
-Read the data file: $section_file
-Read the editorial voice profile: $PROFILE_FILE
-
-Write your analysis to: $output_md
-
-Requirements:
-- Use specific numbers and data points from the source
-- Provide your own judgment, not just summaries
-- Cross-reference with other domains when relevant
-- Write in both English and Chinese sections
-- Never fabricate data — if uncertain, skip it
-" --timeout 900 &>/dev/null &
-
-        SECTION_PIDS+=($!)
-        SECTION_LABELS+=("$section_name")
-    done
-
-    # Wait for section generation
-    for i in "${!SECTION_PIDS[@]}"; do
-        pid=${SECTION_PIDS[$i]}
-        label=${SECTION_LABELS[$i]}
-        if wait "$pid" 2>/dev/null; then
-            log "Generated: $label"
-        else
-            err "Failed: $label"
-            # Retry once
-            log "Retrying: $label"
-            section_file="$SECTIONS_DIR/${label}.json"
-            output_md="$SECTIONS_DIR/${label}.md"
-            claude -p "Analyze data from $section_file and write analysis to $output_md" --timeout 900 &>/dev/null || true
-        fi
-    done
-
-    # Assemble final report
-    log "Assembling final report..."
-    run_with_timeout 300 "Assemble report" \
-        $PYTHON "$SCRIPT_DIR/assemble_report.py" --date "$TODAY" --output "$OUTPUT_DIR" --type daily
-
-    # Check outputs
-    for lang in zh en; do
-        report="$OUTPUT_DIR/daily_${lang}.md"
-        if [ -f "$report" ]; then
-            SIZE=$(wc -c < "$report" | tr -d ' ')
-            WORDS=$(wc -w < "$report" | tr -d ' ')
-            log "daily_${lang}.md: ${SIZE} bytes, ~${WORDS} words"
-        else
-            err "daily_${lang}.md not generated"
-        fi
-    done
-fi
+# Check outputs
+for lang in zh en; do
+    report="$OUTPUT_DIR/daily_${lang}.md"
+    if [ -f "$report" ]; then
+        SIZE=$(wc -c < "$report" | tr -d ' ')
+        WORDS=$(wc -w < "$report" | tr -d ' ')
+        log "daily_${lang}.md: ${SIZE} bytes, ~${WORDS} words"
+    else
+        err "daily_${lang}.md not generated"
+    fi
+done
 
 # ============================================
 # Step 5: Publishing (if configured)
