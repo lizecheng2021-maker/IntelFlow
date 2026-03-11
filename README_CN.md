@@ -213,6 +213,7 @@ IntelFlow 正在积极开发中，欢迎在以下方向贡献：
 作者每天用 IntelFlow 追踪 AI、SEO、财经、创业方向，发布在：
 
 - **英文日报：** [www.lizecheng.net](https://www.lizecheng.net)
+- **中文日报（飞书）：** [飞书文档](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e?fromScene=spaceOverview)
 
 你的配置会完全不同——取决于你定义的维度和数据源。
 

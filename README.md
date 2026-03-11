@@ -204,6 +204,7 @@ Please open an issue first to discuss significant changes.
 The author uses IntelFlow daily to track AI, SEO, finance, and startups. Published output:
 
 - **English reports:** [www.lizecheng.net](https://www.lizecheng.net)
+- **Chinese reports (Feishu):** [feishu.cn/wiki](https://xv7exvpv861.feishu.cn/wiki/Sh8OwOyqningOvkE8MAcYSOwn8e?fromScene=spaceOverview)
 
 Your setup will look completely different based on your dimensions and sources.
 
